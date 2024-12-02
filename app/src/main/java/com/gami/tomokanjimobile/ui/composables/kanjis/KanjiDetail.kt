@@ -55,6 +55,10 @@ fun KanjiDetail(kanji: Kanji,
 
         Button(
             modifier = Modifier.padding(top = 16.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = CustomTheme.colors.primary,
+                contentColor = Color.White
+            ),
             onClick = {
                 // Toggle mastery status immediately for the UI
                 val newMasteryStatus = !isMastered
@@ -77,7 +81,12 @@ fun KanjiDetail(kanji: Kanji,
         }
 
         Button(
-            onClick = { navController.popBackStack() }
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Transparent,
+                contentColor = CustomTheme.colors.primary
+            ),
+            onClick = { navController.popBackStack() },
+
         ) {
             Text("Back")
         }

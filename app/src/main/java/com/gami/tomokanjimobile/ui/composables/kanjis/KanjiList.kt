@@ -15,9 +15,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.gami.tomokanji.ui.theme.CustomTheme
+import com.gami.tomokanjimobile.R
 import com.gami.tomokanjimobile.data.Kanji
 import com.gami.tomokanjimobile.network.KanjiApi
 import kotlinx.coroutines.CoroutineScope
@@ -71,7 +73,18 @@ fun KanjiList(
             containerColor = CustomTheme.colors.secondary,
             contentColor = CustomTheme.colors.textPrimary
         ) {
-            Icon(Icons.Filled.Home, contentDescription = "Scroll to Top")
+            Icon(
+                modifier = Modifier.size(24.dp),
+                painter = painterResource(id = R.drawable.arrow_up),
+                tint = CustomTheme.colors.textPrimary,
+                contentDescription = "Scroll to top"
+            )
+        }
+
+        val iconResource = if (showKunyomi) {
+            R.drawable.eye_open // Drawable for true state
+        } else {
+            R.drawable.eye_closed // Drawable for false state
         }
 
         FloatingActionButton(
@@ -82,7 +95,12 @@ fun KanjiList(
             containerColor = CustomTheme.colors.secondary,
             contentColor = CustomTheme.colors.textPrimary
         ) {
-            Icon(Icons.Filled.Done, contentDescription = "Toggle Kunyomi")
+            Icon(
+                modifier = Modifier.size(24.dp),
+                painter = painterResource(id = iconResource),
+                tint = CustomTheme.colors.textPrimary,
+                contentDescription = "Toggle Kunyomi"
+            )
         }
     }
 }
