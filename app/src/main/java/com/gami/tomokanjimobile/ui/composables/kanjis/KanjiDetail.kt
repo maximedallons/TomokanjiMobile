@@ -1,10 +1,7 @@
 package com.gami.tomokanjimobile.ui.composables.kanjis
 
 import KanjiViewModel
-import android.content.Context
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,18 +17,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.gami.tomokanji.ui.theme.CustomTheme
-import com.gami.tomokanjimobile.dao.KanjiDatabaseBuilder
 import com.gami.tomokanjimobile.data.Kanji
 import com.gami.tomokanjimobile.network.KanjiApi
-import com.gami.tomokanjimobile.utils.Converters
 import kotlinx.coroutines.launch
 
 @Composable
 fun KanjiDetail(kanji: Kanji,
                 isMastered: Boolean,
                 navController: NavController,
-                viewModel: KanjiViewModel, // Pass the ViewModel
-                context: Context
+                viewModel: KanjiViewModel
 ) {
     val coroutineScope = rememberCoroutineScope()
 

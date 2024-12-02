@@ -1,6 +1,5 @@
-package com.gami.tomokanjimobile.ui.composables.kanjis
+package com.gami.tomokanjimobile.ui.composables.words
 
-import KanjiViewModel
 import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -12,17 +11,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import com.gami.tomokanji.ui.theme.CustomTheme
-import com.gami.tomokanjimobile.dao.KanjiDatabaseBuilder
 import com.gami.tomokanjimobile.ui.composables.LevelSelectionHeader
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.gami.tomokanjimobile.dao.WordDatabaseBuilder
 
 @Composable
-fun KanjiScreen(
-    viewModel: KanjiViewModel = viewModel(),
+fun WordScreen(
+    viewModel: WordViewModel = viewModel(),
     navController: NavController,
     context: Context
 ) {
-    val kanjiDao = KanjiDatabaseBuilder.getInstance(context).kanjiDao()
+    val wordDao = WordDatabaseBuilder.getInstance(context).wordDao()
     val coroutineScope = rememberCoroutineScope()
 
     val currentLevel by viewModel.currentLevel.collectAsState()
@@ -30,7 +29,7 @@ fun KanjiScreen(
 
     LaunchedEffect(currentLevel) {
         if(viewModel.needsUpdate.value) {
-            viewModel.fetchKanjisForLevel(kanjiDao, currentLevel)
+            viewModel.fetchWordsForLevel(wordDao, currentLevel)
             viewModel.updateNeedsUpdate(false)
         }
     }
@@ -49,8 +48,7 @@ fun KanjiScreen(
                 CircularProgressIndicator(color = CustomTheme.colors.primary)
             }
         } else {
-            println("Kanjis: ${viewModel.kanjis.value.size}")
-            KanjiList(
+            WordList(
                 viewModel = viewModel,
                 navController = navController,
                 coroutineScope = coroutineScope

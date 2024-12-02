@@ -1,4 +1,4 @@
-package com.gami.tomokanjimobile.navigation
+package com.gami.tomokanjimobile.ui.composables.navigation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -30,7 +30,7 @@ fun BottomNavItem(title: String, isSelected: Boolean, onClick: () -> Unit) {
 @Composable
 fun Nav(navController: NavController, currentRoute: String?) {
     val borderColor = CustomTheme.colors.secondary
-    val screens = listOf("home", "kanji", "words")
+    val screens = listOf("home", "kanji", "word")
 
     Row(
         modifier = Modifier
@@ -52,7 +52,7 @@ fun Nav(navController: NavController, currentRoute: String?) {
         screens.forEach { screen ->
             BottomNavItem(
                 title = screen.capitalize(),
-                isSelected = currentRoute == screen,
+                isSelected = currentRoute?.startsWith(screen) == true,
                 onClick = { navController.navigate(screen) }
             )
         }

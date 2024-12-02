@@ -1,4 +1,4 @@
-package com.gami.tomokanjimobile.ui.composables.kanjis
+package com.gami.tomokanjimobile.ui.composables.words
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -13,10 +13,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gami.tomokanji.ui.theme.CustomTheme
-import com.gami.tomokanjimobile.data.Kanji
+import com.gami.tomokanjimobile.data.Word
 
 @Composable
-fun KanjiCard(kanji: Kanji, mastered: Boolean, onClick: () -> Unit, showKunyomi: Boolean) {
+fun WordCard(word: Word, mastered: Boolean, onClick: () -> Unit, showKanas: Boolean, showTranslations: Boolean) {
     Box(
         modifier = Modifier
             .size(100.dp)
@@ -35,9 +35,26 @@ fun KanjiCard(kanji: Kanji, mastered: Boolean, onClick: () -> Unit, showKunyomi:
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(text = kanji.character, fontSize = 28.sp, color = CustomTheme.colors.textPrimary)
-            if (showKunyomi && kanji.kunyomi.isNotEmpty()) {
-                Text(text = kanji.kunyomi.first(), fontSize = 14.sp, color = CustomTheme.colors.textSecondary)
+            if(word.kanjis.isNotEmpty()) {
+                Text(
+                    text = word.kanjis[0].text,
+                    fontSize = 18.sp,
+                    color = CustomTheme.colors.textPrimary
+                )
+                if(showKanas) {
+                    Text(
+                        text = word.kanas[0].text,
+                        fontSize = 14.sp,
+                        color = CustomTheme.colors.textSecondary
+                    )
+                }
+            }
+            else {
+                Text(
+                    text = word.kanas[0].text,
+                    fontSize = 18.sp,
+                    color = CustomTheme.colors.textPrimary
+                )
             }
         }
     }

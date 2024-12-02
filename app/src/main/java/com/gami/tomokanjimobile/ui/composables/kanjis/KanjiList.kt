@@ -1,15 +1,11 @@
 package com.gami.tomokanjimobile.ui.composables.kanjis
 
 import KanjiViewModel
-import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.*
@@ -20,12 +16,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.gami.tomokanji.ui.theme.CustomTheme
 import com.gami.tomokanjimobile.R
-import com.gami.tomokanjimobile.data.Kanji
-import com.gami.tomokanjimobile.network.KanjiApi
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 

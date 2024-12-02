@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.navigation.NavType
 import com.gami.tomokanji.ui.theme.CustomTheme
-import com.gami.tomokanjimobile.navigation.Nav
+import com.gami.tomokanjimobile.ui.composables.navigation.Nav
 import com.gami.tomokanjimobile.ui.composables.kanjis.KanjiScreen
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -23,8 +23,12 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.gami.tomokanjimobile.data.Kanji
+import com.gami.tomokanjimobile.data.Word
 import com.gami.tomokanjimobile.ui.composables.home.HomeScreen
 import com.gami.tomokanjimobile.ui.composables.kanjis.KanjiDetail
+import com.gami.tomokanjimobile.ui.composables.words.WordDetail
+import com.gami.tomokanjimobile.ui.composables.words.WordScreen
+import com.gami.tomokanjimobile.ui.composables.words.WordViewModel
 import kotlinx.serialization.json.Json
 
 class MainActivity : ComponentActivity() {
@@ -32,6 +36,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val kanjiViewModel: KanjiViewModel by viewModels()
+        val wordViewModel: WordViewModel by viewModels()
 
         enableEdgeToEdge()
         setContent {
@@ -43,7 +48,6 @@ class MainActivity : ComponentActivity() {
                         NavHost(navController = navController, startDestination = "home") {
                             composable("home") { HomeScreen(navController, applicationContext) }
                             composable("kanji") { KanjiScreen(kanjiViewModel, navController, applicationContext) }
-                            composable("words") { HomeScreen(navController, applicationContext) }
                             composable(
                                 route = "kanji_detail/{kanjiJson}/{mastered}",
                                 arguments = listOf(
@@ -56,7 +60,23 @@ class MainActivity : ComponentActivity() {
 
                                 if (!kanjiJson.isNullOrEmpty()) {
                                     val kanji = Json.decodeFromString<Kanji>(kanjiJson)
-                                    KanjiDetail(kanji, mastered, navController, kanjiViewModel, applicationContext)
+                                    KanjiDetail(kanji, mastered, navController, kanjiViewModel)
+                                }
+                            }
+                            composable("word") { WordScreen(wordViewModel, navController, applicationContext) }
+                            composable(
+                                route = "word_detail/{wordJson}/{mastered}",
+                                arguments = listOf(
+                                    navArgument("wordJson") { type = NavType.StringType },
+                                    navArgument("mastered") { type = NavType.BoolType }
+                                )
+                            ) { backStackEntry ->
+                                val wordJson = backStackEntry.arguments?.getString("wordJson")
+                                val mastered = backStackEntry.arguments?.getBoolean("mastered") ?: false
+
+                                if (!wordJson.isNullOrEmpty()) {
+                                    val word = Json.decodeFromString<Word>(wordJson)
+                                    WordDetail(word, mastered, navController, wordViewModel)
                                 }
                             }
                         }
