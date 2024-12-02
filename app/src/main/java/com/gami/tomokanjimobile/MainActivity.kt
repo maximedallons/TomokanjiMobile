@@ -1,5 +1,6 @@
 package com.gami.tomokanjimobile
 
+import KanjiViewModel
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -24,7 +25,6 @@ import androidx.navigation.navArgument
 import com.gami.tomokanjimobile.data.Kanji
 import com.gami.tomokanjimobile.ui.composables.home.HomeScreen
 import com.gami.tomokanjimobile.ui.composables.kanjis.KanjiDetail
-import com.gami.tomokanjimobile.ui.composables.kanjis.KanjiViewModel
 import kotlinx.serialization.json.Json
 
 class MainActivity : ComponentActivity() {
@@ -56,7 +56,7 @@ class MainActivity : ComponentActivity() {
 
                                 if (!kanjiJson.isNullOrEmpty()) {
                                     val kanji = Json.decodeFromString<Kanji>(kanjiJson)
-                                    KanjiDetail(kanji, mastered, navController, applicationContext)
+                                    KanjiDetail(kanji, mastered, navController, kanjiViewModel, applicationContext)
                                 }
                             }
                         }

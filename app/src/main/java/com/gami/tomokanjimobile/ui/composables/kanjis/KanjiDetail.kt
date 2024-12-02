@@ -1,5 +1,6 @@
 package com.gami.tomokanjimobile.ui.composables.kanjis
 
+import KanjiViewModel
 import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -26,7 +27,12 @@ import com.gami.tomokanjimobile.utils.Converters
 import kotlinx.coroutines.launch
 
 @Composable
-fun KanjiDetail(kanji: Kanji, isMastered: Boolean, navController: NavController, context: Context) {
+fun KanjiDetail(kanji: Kanji,
+                isMastered: Boolean,
+                navController: NavController,
+                viewModel: KanjiViewModel, // Pass the ViewModel
+                context: Context
+) {
     val coroutineScope = rememberCoroutineScope()
 
     Column(
@@ -50,14 +56,21 @@ fun KanjiDetail(kanji: Kanji, isMastered: Boolean, navController: NavController,
         Button(
             modifier = Modifier.padding(top = 16.dp),
             onClick = {
+                // Toggle mastery status immediately for the UI
+                val newMasteryStatus = !isMastered
+                viewModel.updateKanjiMastery(kanji.id, newMasteryStatus)
+
+                // Update the server in the background
                 coroutineScope.launch {
-                    if(isMastered) {
-                        KanjiApi.service.unmasterKanji(1, kanji.id)
-                    } else {
+                    if (newMasteryStatus) {
                         KanjiApi.service.masterKanji(1, kanji.id)
+                    } else {
+                        KanjiApi.service.unmasterKanji(1, kanji.id)
                     }
                 }
-                navController.navigate("kanji")
+
+                // Navigate back instantly
+                navController.popBackStack()
             }
         ) {
             Text(if (isMastered) "Unmaster" else "Master")

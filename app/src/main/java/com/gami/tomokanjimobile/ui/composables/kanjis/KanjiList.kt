@@ -1,5 +1,6 @@
 package com.gami.tomokanjimobile.ui.composables.kanjis
 
+import KanjiViewModel
 import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -28,25 +29,26 @@ import kotlinx.serialization.json.Json
 
 @Composable
 fun KanjiList(
-    kanjis: List<Pair<Kanji, Boolean>>,
-    showKunyomi: Boolean,
-    onShowKunyomiChange: (Boolean) -> Unit,
+    viewModel: KanjiViewModel,
     navController: NavController,
     coroutineScope: CoroutineScope
 ) {
+    val kanjis by viewModel.kanjis.collectAsState()
+    val showKunyomi by viewModel.showKunyomi.collectAsState()
     val listState = rememberLazyGridState()
-    var mutableKanjis by remember { mutableStateOf(kanjis.toMutableList()) }
 
     Box(
-        modifier = Modifier.fillMaxSize().background(CustomTheme.colors.backgroundPrimary),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(CustomTheme.colors.backgroundPrimary),
         contentAlignment = Alignment.Center
     ) {
         LazyVerticalGrid(
             columns = GridCells.Adaptive(minSize = 100.dp),
             state = listState
         ) {
-            items(mutableKanjis.size) { index ->
-                val (kanji, mastered) = mutableKanjis[index]
+            items(kanjis.size) { index ->
+                val (kanji, mastered) = kanjis[index]
                 KanjiCard(
                     kanji = kanji,
                     mastered = mastered,
@@ -73,7 +75,7 @@ fun KanjiList(
         }
 
         FloatingActionButton(
-            onClick = { onShowKunyomiChange(!showKunyomi) },
+            onClick = { viewModel.toggleShowKunyomi() },
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .padding(16.dp),
