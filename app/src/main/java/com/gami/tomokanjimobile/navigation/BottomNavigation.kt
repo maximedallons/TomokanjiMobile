@@ -5,36 +5,32 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.gami.tomokanji.ui.theme.CustomTheme
-import com.gami.tomokanjimobile.MainActivity
 
 @Composable
 fun BottomNavItem(title: String, isSelected: Boolean, onClick: () -> Unit) {
     val textColor = if (isSelected) CustomTheme.colors.textPrimary else CustomTheme.colors.textSecondary
-
     Text(
         text = title,
-        modifier = Modifier.clickable(onClick = onClick),
         color = textColor,
+        modifier = Modifier
+            .clickable(onClick = onClick)
+            .padding(8.dp),
         textAlign = TextAlign.Center
     )
 }
 
 @Composable
-fun Nav(selectedScreen: MutableState<MainActivity.Screen>, context: android.content.Context) {
+fun Nav(navController: NavController, currentRoute: String?) {
     val borderColor = CustomTheme.colors.secondary
-    val screens = listOf(
-        MainActivity.Screen.Home(context),
-        MainActivity.Screen.Kanji(context),
-        MainActivity.Screen.Words(context)
-    )
+    val screens = listOf("home", "kanji", "words")
 
     Row(
         modifier = Modifier
@@ -55,9 +51,9 @@ fun Nav(selectedScreen: MutableState<MainActivity.Screen>, context: android.cont
     ) {
         screens.forEach { screen ->
             BottomNavItem(
-                title = screen.name,
-                isSelected = selectedScreen.value == screen,
-                onClick = { selectedScreen.value = screen }
+                title = screen.capitalize(),
+                isSelected = currentRoute == screen,
+                onClick = { navController.navigate(screen) }
             )
         }
     }

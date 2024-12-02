@@ -1,9 +1,6 @@
 package com.gami.tomokanjimobile.network
 
 import com.gami.tomokanjimobile.data.Kanji
-import com.gami.tomokanjimobile.data.MasteredKanji
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.DELETE
@@ -21,7 +18,7 @@ interface KanjiApi {
     suspend fun getKanjisForLevel(@Path("level") level: Int): List<Kanji>
 
     @GET("tomokanji/api/users/{userId}/kanjis")
-    suspend fun getUserKanjis(@Path("userId") userId: Int): List<MasteredKanji>
+    suspend fun getMasteredKanjiIds(@Path("userId") userId: Int): List<Int>
 
     @POST("tomokanji/api/users/{userId}/kanjis/{kanjiId}")
     suspend fun masterKanji(@Path("userId") userId: Int, @Path("kanjiId") kanjiId: Int): Boolean

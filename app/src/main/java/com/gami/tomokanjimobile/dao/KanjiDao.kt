@@ -11,6 +11,9 @@ interface KanjiDao {
     @Query("SELECT * FROM kanji_table")
     suspend fun getAllKanjis(): List<Kanji>
 
+    @Query("SELECT * FROM kanji_table WHERE id = :id")
+    suspend fun getKanji(id: Int): Kanji
+
     @Query("SELECT * FROM kanji_table WHERE level = :level")
     suspend fun getKanjisForLevel(level: Int): List<Kanji>
 
