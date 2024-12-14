@@ -1,16 +1,17 @@
 package com.gami.tomokanjimobile.ui.composables.words
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.gami.tomokanjimobile.SearchableViewModel
 import com.gami.tomokanjimobile.dao.WordDao
 import com.gami.tomokanjimobile.data.Word
 import com.gami.tomokanjimobile.network.WordApi
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class WordViewModel : ViewModel() {
+class WordViewModel : SearchableViewModel() {
     private val _words = MutableStateFlow<List<Pair<Word, Boolean>>>(emptyList())
     val words: StateFlow<List<Pair<Word, Boolean>>> get() = _words
 
@@ -71,6 +72,14 @@ class WordViewModel : ViewModel() {
             }
 
             _isLoading.value = false
+        }
+    }
+
+    override suspend fun search(query: String) {
+        _words.update {
+            WordApi.service.searchWords(query).map { word ->
+                Pair(word, masteredWordIds.contains(word.id))
+            }
         }
     }
 }

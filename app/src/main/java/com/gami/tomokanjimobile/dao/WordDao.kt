@@ -22,4 +22,7 @@ interface WordDao {
 
     @Query("DELETE FROM word_table")
     suspend fun deleteAll()
+
+    @Query("SELECT * FROM word_table WHERE level = :level LIMIT :limit OFFSET :startIndex")
+    suspend fun getWordsForPage(startIndex: Int, limit: Int, level: Int): List<Word>
 }

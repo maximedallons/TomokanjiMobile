@@ -1,6 +1,5 @@
 package com.gami.tomokanjimobile.ui.composables.kanjis
 
-import KanjiViewModel
 import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

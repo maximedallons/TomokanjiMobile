@@ -41,7 +41,7 @@ fun WordCard(word: Word, mastered: Boolean, onClick: () -> Unit, showKanas: Bool
                     fontSize = 18.sp,
                     color = CustomTheme.colors.textPrimary
                 )
-                if(showKanas) {
+                if(showKanas && word.kanas.isNotEmpty()) {
                     Text(
                         text = word.kanas[0].text,
                         fontSize = 14.sp,

@@ -3,7 +3,9 @@ package com.gami.tomokanjimobile.ui.composables.words
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -22,132 +24,154 @@ import com.gami.tomokanjimobile.network.WordApi
 import kotlinx.coroutines.launch
 
 @Composable
-fun WordDetail(word: Word,
-                isMastered: Boolean,
-                navController: NavController,
-                viewModel: WordViewModel
+fun WordDetail(
+    word: Word,
+    isMastered: Boolean,
+    navController: NavController,
+    viewModel: WordViewModel
 ) {
     val coroutineScope = rememberCoroutineScope()
-
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(CustomTheme.colors.backgroundPrimary),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        contentAlignment = Alignment.Center // Keeps content vertically centered
     ) {
-        val borderColor = if (isMastered) CustomTheme.colors.primary else CustomTheme.colors.backgroundSecondary
-        Box(
+        Column(
             modifier = Modifier
-                .height(400.dp)
-                .width(300.dp)
-                .padding(16.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(CustomTheme.colors.backgroundSecondary)
-                .border(
-                    2.dp,
-                    borderColor,
-                    RoundedCornerShape(16.dp)
-                ),
-            contentAlignment = Alignment.Center
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState()) // Enables vertical scrolling
+                .wrapContentHeight()
+                .padding(16.dp), // Adjusts spacing from screen borders
+            horizontalAlignment = Alignment.CenterHorizontally, // Centers content horizontally
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
+            val borderColor = if (isMastered) CustomTheme.colors.primary else CustomTheme.colors.backgroundSecondary
 
+            // The card wrapper
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .padding(16.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(CustomTheme.colors.backgroundSecondary)
+                    .border(
+                        2.dp,
+                        borderColor,
+                        RoundedCornerShape(16.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
                 Column(
-                    modifier = Modifier.weight(1f).fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                    verticalArrangement = Arrangement.Top,
                 ) {
-                    if (word.kanjis.isNotEmpty()) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        // Display the kanjis and kanas
+                        if (word.kanjis.isNotEmpty()) {
+                            Text(
+                                text = word.kanjis[0].text,
+                                fontSize = 24.sp,
+                                color = CustomTheme.colors.textPrimary
+                            )
+                            if(word.kanas.isNotEmpty()) {
+                                Text(
+                                    text = word.kanas[0].text,
+                                    fontSize = 18.sp,
+                                    color = CustomTheme.colors.textSecondary
+                                )
+                            }
+                        } else if (word.kanas.isNotEmpty()) {
+                            Text(
+                                text = word.kanas[0].text,
+                                fontSize = 24.sp,
+                                color = CustomTheme.colors.textPrimary
+                            )
+                        }
+                        else {
+                            Text(
+                                text = "No readings available",
+                                fontSize = 24.sp,
+                                color = CustomTheme.colors.textPrimary
+                            )
+                        }
+                    }
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
                         Text(
-                            text = word.kanjis[0].text,
-                            fontSize = 24.sp,
-                            color = CustomTheme.colors.textPrimary
-                        )
-                        Text(
-                            text = word.kanas[0].text,
-                            fontSize = 18.sp,
+                            text = "Level: N${word.level}",
+                            fontSize = 16.sp,
                             color = CustomTheme.colors.textSecondary
                         )
-                    } else {
+                    }
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.Start,
+                        verticalArrangement = Arrangement.Top
+                    ) {
                         Text(
-                            text = word.kanas[0].text,
-                            fontSize = 24.sp,
-                            color = CustomTheme.colors.textPrimary
+                            text = "Meanings:",
+                            fontSize = 18.sp,
+                            color = CustomTheme.colors.textPrimary,
+                            modifier = Modifier.padding(bottom = 8.dp)
                         )
+                        word.translations.forEach { meaning ->
+                            Text(
+                                text = "• $meaning",
+                                fontSize = 16.sp,
+                                color = CustomTheme.colors.textSecondary,
+                                modifier = Modifier.padding(vertical = 2.dp)
+                            )
+                        }
                     }
                 }
-
-                Column(
-                    modifier = Modifier.weight(1f).fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "Level: N${word.level}",
-                        fontSize = 16.sp,
-                        color = CustomTheme.colors.textSecondary
-                    )
-                }
-
-                Column(
-                    modifier = Modifier.weight(1f).fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "Meanings:",
-                        fontSize = 18.sp,
-                        color = CustomTheme.colors.textPrimary
-                    )
-                    Text(
-                        text = word.translations.joinToString(", "),
-                        fontSize = 16.sp,
-                        color = CustomTheme.colors.textSecondary
-                    )
-                }
             }
-        }
 
-        Button(
-            modifier = Modifier.padding(top = 16.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = CustomTheme.colors.primary,
-                contentColor = Color.White
-            ),
-            onClick = {
-                // Toggle mastery status immediately for the UI
-                val newMasteryStatus = !isMastered
-                viewModel.updateWordMastery(word.id, newMasteryStatus)
-
-                // Update the server in the background
-                coroutineScope.launch {
-                    if (newMasteryStatus) {
-                        WordApi.service.masterWord(1, word.id)
-                    } else {
-                        WordApi.service.unmasterWord(1, word.id)
+            // Buttons
+            Button(
+                modifier = Modifier.padding(top = 16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = CustomTheme.colors.primary,
+                    contentColor = Color.White
+                ),
+                onClick = {
+                    // Toggle mastery status immediately for the UI
+                    val newMasteryStatus = !isMastered
+                    viewModel.updateWordMastery(word.id, newMasteryStatus)
+                    // Update the server in the background
+                    coroutineScope.launch {
+                        if (newMasteryStatus) {
+                            WordApi.service.masterWord(1, word.id)
+                        } else {
+                            WordApi.service.unmasterWord(1, word.id)
+                        }
                     }
+                    // Navigate back instantly
+                    navController.popBackStack()
                 }
-
-                // Navigate back instantly
-                navController.popBackStack()
-            }
-        ) {
-            Text(if (isMastered) "Unmaster" else "Master")
-        }
-
-        Button(
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Transparent,
-                contentColor = CustomTheme.colors.primary
-            ),
-            onClick = { navController.popBackStack() },
-
             ) {
-            Text("Back")
+                Text(if (isMastered) "Unmaster" else "Master")
+            }
+            Button(
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Transparent,
+                    contentColor = CustomTheme.colors.primary
+                ),
+                onClick = { navController.popBackStack() },
+            ) {
+                Text("Back")
+            }
         }
     }
 }

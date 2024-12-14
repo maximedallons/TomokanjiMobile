@@ -1,5 +1,7 @@
-import androidx.lifecycle.ViewModel
+package com.gami.tomokanjimobile.ui.composables.kanjis
+
 import androidx.lifecycle.viewModelScope
+import com.gami.tomokanjimobile.SearchableViewModel
 import com.gami.tomokanjimobile.dao.KanjiDao
 import com.gami.tomokanjimobile.data.Kanji
 import com.gami.tomokanjimobile.network.KanjiApi
@@ -8,7 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class KanjiViewModel : ViewModel() {
+class KanjiViewModel : SearchableViewModel() {
     private val _kanjis = MutableStateFlow<List<Pair<Kanji, Boolean>>>(emptyList())
     val kanjis: StateFlow<List<Pair<Kanji, Boolean>>> get() = _kanjis
 

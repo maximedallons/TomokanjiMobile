@@ -1,6 +1,5 @@
 package com.gami.tomokanjimobile.ui.composables.kanjis
 
-import KanjiViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -16,8 +15,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.gami.tomokanji.ui.theme.CustomTheme
 import com.gami.tomokanjimobile.R
+import com.gami.tomokanjimobile.data.Kanji
+import com.gami.tomokanjimobile.ui.composables.navigation.ScrollToTopFAB
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -39,7 +39,8 @@ fun KanjiList(
     ) {
         LazyVerticalGrid(
             columns = GridCells.Adaptive(minSize = 100.dp),
-            state = listState
+            state = listState,
+            contentPadding = PaddingValues(0.dp, 0.dp, 0.dp, 80.dp)
         ) {
             items(kanjis.size) { index ->
                 val (kanji, mastered) = kanjis[index]
@@ -53,25 +54,8 @@ fun KanjiList(
                 )
             }
         }
-        FloatingActionButton(
-            onClick = {
-                coroutineScope.launch {
-                    listState.animateScrollToItem(0)
-                }
-            },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp),
-            containerColor = CustomTheme.colors.secondary,
-            contentColor = CustomTheme.colors.textPrimary
-        ) {
-            Icon(
-                modifier = Modifier.size(24.dp),
-                painter = painterResource(id = R.drawable.arrow_up),
-                tint = CustomTheme.colors.textPrimary,
-                contentDescription = "Scroll to top"
-            )
-        }
+
+        ScrollToTopFAB(coroutineScope, listState, Modifier.align(Alignment.BottomEnd).padding(16.dp))
 
         val iconResource = if (showKunyomi) {
             R.drawable.eye_open // Drawable for true state
@@ -95,4 +79,9 @@ fun KanjiList(
             )
         }
     }
+}
+
+sealed class KanjiGridItem {
+    data class KanjiItem(val wordData: Pair<Kanji, Boolean>) : KanjiGridItem()
+    data class Divider(val rangeText: String) : KanjiGridItem()
 }

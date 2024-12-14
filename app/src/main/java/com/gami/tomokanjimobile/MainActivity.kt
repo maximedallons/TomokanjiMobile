@@ -1,6 +1,5 @@
 package com.gami.tomokanjimobile
 
-import KanjiViewModel
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -26,6 +25,7 @@ import com.gami.tomokanjimobile.data.Kanji
 import com.gami.tomokanjimobile.data.Word
 import com.gami.tomokanjimobile.ui.composables.home.HomeScreen
 import com.gami.tomokanjimobile.ui.composables.kanjis.KanjiDetail
+import com.gami.tomokanjimobile.ui.composables.kanjis.KanjiViewModel
 import com.gami.tomokanjimobile.ui.composables.words.WordDetail
 import com.gami.tomokanjimobile.ui.composables.words.WordScreen
 import com.gami.tomokanjimobile.ui.composables.words.WordViewModel
