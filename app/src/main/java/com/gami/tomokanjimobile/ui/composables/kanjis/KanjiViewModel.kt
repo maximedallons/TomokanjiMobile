@@ -14,6 +14,9 @@ class KanjiViewModel : SearchableViewModel() {
     private val _kanjis = MutableStateFlow<List<Pair<Kanji, Boolean>>>(emptyList())
     val kanjis: StateFlow<List<Pair<Kanji, Boolean>>> get() = _kanjis
 
+    private val _filteredKanjis = MutableStateFlow<List<Pair<Kanji, Boolean>>>(emptyList())
+    val filteredKanjis: StateFlow<List<Pair<Kanji, Boolean>>> get() = _filteredKanjis
+
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> get() = _isLoading
 
@@ -65,5 +68,21 @@ class KanjiViewModel : SearchableViewModel() {
 
             _isLoading.value = false
         }
+    }
+
+    fun filterKanjisIds(query: String) {
+        _filteredKanjis.value = _kanjis.value.filter {
+            it.first.character.contains(query, ignoreCase = true) ||
+            it.first.meanings.any { meaning ->
+                meaning.contains(query, ignoreCase = true)
+            } ||
+            it.first.onyomi.any { onyomi ->
+                onyomi.contains(query, ignoreCase = true)
+            } ||
+            it.first.kunyomi.any { kunyomi ->
+                kunyomi.contains(query, ignoreCase = true)
+            }
+        }
+        println("Filtered Kanjis: ${_filteredKanjis.value}")
     }
 }

@@ -1,6 +1,9 @@
 package com.gami.tomokanjimobile
 
 import android.app.Application
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
+import com.gami.tomokanji.ui.theme.CustomTheme
 import com.gami.tomokanjimobile.dao.KanjiDatabaseBuilder
 import com.gami.tomokanjimobile.dao.WordDatabaseBuilder
 import com.gami.tomokanjimobile.data.Word
@@ -13,7 +16,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 
 class MainApplication : Application() {
-
     override fun onCreate() {
         super.onCreate()
 
