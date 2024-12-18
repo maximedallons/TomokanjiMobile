@@ -9,17 +9,18 @@ import com.gami.tomokanjimobile.dao.WordDatabaseBuilder
 import com.gami.tomokanjimobile.data.Word
 import com.gami.tomokanjimobile.network.KanjiApi
 import com.gami.tomokanjimobile.network.WordApi
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import kotlinx.serialization.json.Json
+import java.util.concurrent.Executors
 
 class MainApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        //Get the kanji and word database
+        val customExecutor = Executors.newFixedThreadPool(4).asCoroutineDispatcher()
+        KanjiDatabaseBuilder.setExecutor(customExecutor)
+        WordDatabaseBuilder.setExecutor(customExecutor)
+
         CoroutineScope(Dispatchers.IO).launch {
             //if the kanji and word database is empty, fill it with data from the API
             val kanjiDao = KanjiDatabaseBuilder.getInstance(applicationContext).kanjiDao()

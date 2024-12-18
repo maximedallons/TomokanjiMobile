@@ -30,7 +30,7 @@ fun KanjiList(
     navController: NavController,
     coroutineScope: CoroutineScope
 ) {
-    val kanjis by viewModel.kanjis.collectAsState()
+    val kanjis by viewModel.filteredKanjis.collectAsState()
     val showKunyomi by viewModel.showKunyomi.collectAsState()
     val listState = rememberLazyGridState()
 
@@ -61,7 +61,6 @@ fun KanjiList(
         items
     }
 
-    // Map dividers to their positions for the sidebar
     val dividers: List<Pair<String, Int>> = kanjiGridItems.mapIndexedNotNull { index, item ->
         if (item is KanjiGridItem.Divider) Pair(item.rangeText.split("-")[0].trim(), index) else null
     }
@@ -77,9 +76,9 @@ fun KanjiList(
         ) {
             // Main kanji grid
             LazyVerticalGrid(
-                columns = GridCells.Fixed(2), // 2 columns in the grid
+                columns = GridCells.Fixed(5), // 5 columns in the grid
                 state = listState,
-                contentPadding = PaddingValues(0.dp, 0.dp, 0.dp, 80.dp),
+                contentPadding = PaddingValues(0.dp, 0.dp, 0.dp, 160.dp),
                 modifier = Modifier
                     .weight(0.85f)
             ) {
@@ -87,7 +86,7 @@ fun KanjiList(
                     count = kanjiGridItems.size,
                     span = { index ->
                         when (kanjiGridItems[index]) {
-                            is KanjiGridItem.Divider -> GridItemSpan(2) // Dividers span across 2 columns
+                            is KanjiGridItem.Divider -> GridItemSpan(5) // Dividers span across 2 columns
                             is KanjiGridItem.KanjiItem -> GridItemSpan(1) // Kanji items take 1 column
                         }
                     }
@@ -126,19 +125,19 @@ fun KanjiList(
             }
 
             // Sidebar with dividers
-            Box(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .weight(0.10f)
-                    .background(CustomTheme.colors.backgroundPrimary)
-            ) {
-                DividerLinks(
-                    dividers = dividers,
-                    currentDividerIndex = currentDividerIndex,
-                    listState = listState,
-                    coroutineScope = coroutineScope
-                )
-            }
+//            Box(
+//                modifier = Modifier
+//                    .fillMaxHeight()
+//                    .weight(0.10f)
+//                    .background(CustomTheme.colors.backgroundPrimary)
+//            ) {
+//                DividerLinks(
+//                    dividers = dividers,
+//                    currentDividerIndex = currentDividerIndex,
+//                    listState = listState,
+//                    coroutineScope = coroutineScope
+//                )
+//            }
         }
 
         // Floating Action Button for toggling Kunyomi

@@ -25,7 +25,7 @@ import com.gami.tomokanjimobile.ui.composables.LoginScreen
 import com.gami.tomokanjimobile.ui.composables.home.HomeScreen
 import com.gami.tomokanjimobile.ui.composables.kanjis.KanjiDetail
 import com.gami.tomokanjimobile.ui.composables.kanjis.KanjiViewModel
-import com.gami.tomokanjimobile.ui.composables.navigation.CircleButton
+import com.gami.tomokanjimobile.ui.composables.navigation.BottomNavigationViewModel
 import com.gami.tomokanjimobile.ui.composables.navigation.PillNavigationBar
 import com.gami.tomokanjimobile.ui.composables.words.WordDetail
 import com.gami.tomokanjimobile.ui.composables.words.WordScreen
@@ -38,24 +38,27 @@ class MainActivity : ComponentActivity() {
 
         val kanjiViewModel: KanjiViewModel by viewModels()
         val wordViewModel: WordViewModel by viewModels()
+        val bottomNavigationViewModel: BottomNavigationViewModel by viewModels()
 
         enableEdgeToEdge()
         setContent {
-            MainScreen(kanjiViewModel, wordViewModel)
+            MainScreen(bottomNavigationViewModel, kanjiViewModel, wordViewModel)
         }
     }
 
+
     @Composable
-    fun MainScreen(kanjiViewModel: KanjiViewModel, wordViewModel: WordViewModel) {
+    fun MainScreen(bottomNavigationViewModel: BottomNavigationViewModel, kanjiViewModel: KanjiViewModel, wordViewModel: WordViewModel) {
         val navController = rememberNavController()
-        val circleButtonsState = remember { mutableStateOf<List<CircleButton>>(emptyList()) }
 
         CustomTheme {
             Box(modifier = Modifier.fillMaxSize()) { // Ensures that the NavHost takes up only the required space
                 NavHost(navController = navController, startDestination = "login") {
-                    composable("login") { LoginScreen(navController) }
+                    composable("login") { LoginScreen(navController, LocalContext.current, kanjiViewModel, wordViewModel) }
                     composable("home") { HomeScreen(navController, LocalContext.current) }
-                    composable("kanji") { KanjiScreen(kanjiViewModel, navController, circleButtonsState, LocalContext.current) }
+                    composable("kanji") {
+                        KanjiScreen(kanjiViewModel, bottomNavigationViewModel, navController)
+                    }
                     composable(
                         route = "kanji_detail/{kanjiJson}/{mastered}",
                         arguments = listOf(
@@ -71,7 +74,9 @@ class MainActivity : ComponentActivity() {
                             KanjiDetail(kanji, mastered, navController, kanjiViewModel)
                         }
                     }
-                    composable("word") { WordScreen(wordViewModel, navController, circleButtonsState, LocalContext.current) }
+                    composable("word") {
+                        WordScreen(wordViewModel, bottomNavigationViewModel, navController)
+                    }
                     composable(
                         route = "word_detail/{wordJson}/{mastered}",
                         arguments = listOf(
@@ -90,13 +95,13 @@ class MainActivity : ComponentActivity() {
                 }
 
                 val currentRoute = findCurrentRoute(navController)
-                if (currentRoute != "login") {
+                if (currentRoute != "login" && currentRoute != "loading") {
                     PillNavigationBar(
+                        bottomNavigationViewModel = bottomNavigationViewModel,
                         navController = navController,
                         currentRoute = currentRoute,
                         modifier = Modifier
-                            .align(Alignment.BottomCenter),
-                        circleButtonsState = circleButtonsState
+                            .align(Alignment.BottomCenter)
                     )
                 }
             }

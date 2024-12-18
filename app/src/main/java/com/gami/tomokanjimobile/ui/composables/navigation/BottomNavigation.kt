@@ -11,32 +11,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.gami.tomokanji.ui.theme.CustomTheme
+import java.util.*
 
-@Composable
-fun BottomNavItem(title: String, isSelected: Boolean, onClick: () -> Unit, circleButtonsState : MutableState<List<CircleButton>>) {
-    val textColor = if (isSelected) CustomTheme.colors.textPrimary else CustomTheme.colors.textSecondary
-    Text(
-        text = title,
-        color = textColor,
-        modifier = Modifier
-            .clickable(
-                indication = null, // Removes the ripple effect
-                interactionSource = remember { MutableInteractionSource() } // Prevents any undesired behavior
-            ) {
-                circleButtonsState.value = emptyList()
-                onClick()
-            }
-            .padding(8.dp),
-        textAlign = TextAlign.Center
-    )
-}
-
-// Data class for CircleButtons
 data class CircleButton(
     val label: String,
     val onClick: () -> Unit,
@@ -45,58 +26,62 @@ data class CircleButton(
 
 @Composable
 fun PillNavigationBar(
+    bottomNavigationViewModel: BottomNavigationViewModel,
     navController: NavController,
     currentRoute: String?,
-    modifier: Modifier,
-    circleButtonsState: MutableState<List<CircleButton>> // Changed to a MutableState for dynamic control
+    modifier: Modifier
 ) {
-    val screens = listOf("home", "kanji", "word") // Navigation items
+    var isClickableGlobal by remember { mutableStateOf(true) }
+    val screens = listOf("home", "kanji", "word")
     val pillColor = CustomTheme.colors.backgroundSecondary
-    val pillHeight = 50.dp // Height of the pill shape
-    val pillHorizontalPadding = 24.dp // Padding inside the pill container
+    val pillHeight = 50.dp
+    val pillHorizontalPadding = 24.dp
+    val additionalCenterButtons by bottomNavigationViewModel.additionalCenterButtons.collectAsState()
+
+    // Handle resetting the `isClickableGlobal` state after a delay
+    if (!isClickableGlobal) {
+        LaunchedEffect(Unit) {
+            kotlinx.coroutines.delay(750L) // 1500ms global delay
+            isClickableGlobal = true // Re-enable clicks globally
+        }
+    }
 
     Box(
         modifier = modifier
             .fillMaxWidth()
+            .fillMaxHeight(0.2f)
+            .pointerInput(Unit) { awaitPointerEventScope { while (true) { awaitPointerEvent() } } }
             .background(
                 brush = androidx.compose.ui.graphics.Brush.verticalGradient(
                     colors = listOf(
-                        CustomTheme.colors.backgroundPrimary.copy(alpha = 0f), // Fully transparent at the top
-                        CustomTheme.colors.backgroundPrimary // Solid at the bottom
+                        CustomTheme.colors.backgroundPrimary.copy(alpha = 0f),
+                        CustomTheme.colors.backgroundPrimary
                     ),
                     startY = 0f,
                     endY = 100f
                 ),
             )
     ) {
-        // Circle Buttons Container
-        val circleButtons = circleButtonsState.value // Observe state changes
-        if (circleButtons.isNotEmpty()) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = pillHeight) // Place above the pill
-                    .align(Alignment.TopCenter),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                circleButtons.forEach { button ->
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp) // Size of the circle button
-                            .offset { IntOffset(0, -40) } // Offset to place the buttons above the pill
-                            .clip(CircleShape)
-                            .background(button.background)
-                            .clickable { button.onClick() },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = button.label,
-                            color = CustomTheme.colors.textPrimary,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(8.dp)) // Space between buttons
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp), // Horizontal spacing between buttons
+            verticalAlignment = Alignment.CenterVertically, // Align buttons in the center vertically
+            modifier = Modifier
+                .align(Alignment.Center)
+                .padding(bottom = 48.dp)
+        ) {
+            additionalCenterButtons.forEach { button ->
+                Box(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(button.background)
+                        .size(40.dp) // Size for the button
+                        .clickable { button.onClick() }
+                ) {
+                    Text(
+                        text = button.label,
+                        color = CustomTheme.colors.textPrimary,
+                        modifier = Modifier.align(Alignment.Center) // Center the text inside the button
+                    )
                 }
             }
         }
@@ -104,41 +89,68 @@ fun PillNavigationBar(
         // Pill Container Background
         Box(
             modifier = Modifier
-                .padding(16.dp, 30.dp)
+                .padding(16.dp, 0.dp, 16.dp, 30.dp)
                 .height(pillHeight)
                 .fillMaxWidth()
-                .align(Alignment.Center)
+                .align(Alignment.BottomCenter)
                 .background(
                     color = pillColor,
-                    shape = RoundedCornerShape(pillHeight / 2) // Create capsule shape
+                    shape = RoundedCornerShape(pillHeight / 2)
                 )
         ) {
-            // Navigation Items inside the pill
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = pillHorizontalPadding) // Space from left and right edges
+                    .padding(horizontal = pillHorizontalPadding)
                     .align(Alignment.Center),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 screens.forEach { screen ->
                     BottomNavItem(
-                        title = screen.capitalize(),
+                        title = screen.capitalize(Locale.ROOT),
                         isSelected = currentRoute?.startsWith(screen) == true,
+                        isClickableGlobal = isClickableGlobal, // Pass global state
                         onClick = {
-                            navController.navigate(screen) {
-                                popUpTo(navController.graph.startDestinationId) {
-                                    saveState = true
+                            if (currentRoute != screen) { // Prevent navigating to the same tab
+                                isClickableGlobal = false // Disable clicks globally
+                                bottomNavigationViewModel.clearCenterButtons()
+                                navController.navigate(screen) {
+                                    popUpTo(navController.graph.startDestinationId) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
                             }
-                        },
-                        circleButtonsState
+                        }
                     )
                 }
             }
         }
     }
+}
+
+@Composable
+fun BottomNavItem(
+    title: String,
+    isSelected: Boolean,
+    isClickableGlobal: Boolean, // Receive global clickability state
+    onClick: () -> Unit
+) {
+    val textColor = if (isSelected) CustomTheme.colors.textPrimary else CustomTheme.colors.textSecondary
+    Text(
+        text = title,
+        color = textColor,
+        modifier = Modifier
+            .clickable(
+                enabled = !isSelected && isClickableGlobal, // Disable click for selected tab
+                indication = null, // Removes the ripple effect
+                interactionSource = remember { MutableInteractionSource() } // Prevents undesired behavior
+            ) {
+                onClick()
+            }
+            .padding(8.dp),
+        textAlign = TextAlign.Center
+    )
 }

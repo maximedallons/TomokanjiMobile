@@ -15,32 +15,20 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.gami.tomokanji.ui.theme.CustomTheme
 import com.gami.tomokanjimobile.data.Word
-import com.gami.tomokanjimobile.ui.composables.navigation.DividerLinks
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 @Composable
 fun WordList(
     viewModel: WordViewModel,
-    navController: NavController,
-    coroutineScope: CoroutineScope
+    navController: NavController
 ) {
-    val words by viewModel.words.collectAsState()
+    val words by viewModel.filteredWords.collectAsState()
     val showKanas by viewModel.showKanas.collectAsState()
     val showTranslations by viewModel.showTranslations.collectAsState()
 
     // Lazy Grid State to control the word list scrolling
     val listState = rememberLazyGridState()
-
-    // Monitor the current first visible item in the list
-    val currentDividerIndex by remember {
-        derivedStateOf {
-            val firstVisibleIndex = listState.firstVisibleItemIndex
-            val visibleIndex = listState.layoutInfo.visibleItemsInfo.firstOrNull()?.index ?: 0
-            visibleIndex
-        }
-    }
 
     // Process the word list
     val wordGridItems: List<WordGridItem> = remember(words) {
@@ -60,11 +48,6 @@ fun WordList(
         items
     }
 
-    // Map dividers to their positions with simplified text for the sidebar
-    val dividers: List<Pair<String, Int>> = wordGridItems.mapIndexedNotNull { index, item ->
-        if (item is WordGridItem.Divider) Pair(item.rangeText.split("-")[0].trim(), index) else null
-    }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -78,7 +61,7 @@ fun WordList(
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2), // 2 columns in the grid
                 state = listState,
-                contentPadding = PaddingValues(0.dp, 0.dp, 0.dp, 80.dp),
+                contentPadding = PaddingValues(0.dp, 0.dp, 0.dp, 160.dp),
                 modifier = Modifier
                     .weight(0.85f)
             ) {
@@ -126,19 +109,19 @@ fun WordList(
             }
 
             // Sidebar with dividers
-            Box(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .weight(0.10f)
-                    .background(CustomTheme.colors.backgroundPrimary)
-            ) {
-                DividerLinks(
-                    dividers = dividers,
-                    currentDividerIndex = currentDividerIndex,
-                    listState = listState,
-                    coroutineScope = coroutineScope
-                )
-            }
+//            Box(
+//                modifier = Modifier
+//                    .fillMaxHeight()
+//                    .weight(0.10f)
+//                    .background(CustomTheme.colors.backgroundPrimary)
+//            ) {
+//                DividerLinks(
+//                    dividers = dividers,
+//                    currentDividerIndex = currentDividerIndex,
+//                    listState = listState,
+//                    coroutineScope = coroutineScope
+//                )
+//            }
         }
     }
 }

@@ -14,6 +14,12 @@ interface KanjiDao {
     @Query("SELECT * FROM kanji_table WHERE id = :id")
     suspend fun getKanji(id: Int): Kanji
 
+    @Query("SELECT * FROM kanji_table LIMIT :limit OFFSET :offset")
+    suspend fun getKanjisChunk(limit: Int, offset: Int): List<Kanji>
+
+    @Query("SELECT COUNT(*) FROM kanji_table")
+    suspend fun getKanjiCount(): Int
+
     @Query("SELECT * FROM kanji_table WHERE level = :level")
     suspend fun getKanjisForLevel(level: Int): List<Kanji>
 

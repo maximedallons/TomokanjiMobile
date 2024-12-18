@@ -16,23 +16,33 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.gami.tomokanji.ui.theme.CustomTheme
 import com.gami.tomokanjimobile.R
+import com.gami.tomokanjimobile.dao.KanjiDatabaseBuilder
+import com.gami.tomokanjimobile.dao.WordDatabaseBuilder
 import com.gami.tomokanjimobile.network.LoginApi
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.gami.tomokanjimobile.ui.composables.kanjis.KanjiViewModel
+import com.gami.tomokanjimobile.ui.composables.words.WordViewModel
+import kotlinx.coroutines.*
+import java.util.concurrent.Executors
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(navController: androidx.navigation.NavHostController) {
+fun LoginScreen(navController: NavHostController, context: Context, kanjiViewModel: KanjiViewModel, wordViewModel: WordViewModel) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var loading by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
+
+    val kanjiDao = KanjiDatabaseBuilder.getInstance(context).kanjiDao()
+    val wordDao = WordDatabaseBuilder.getInstance(context).wordDao()
+
+    LaunchedEffect(Unit) {
+        kanjiViewModel.fetchKanjis(kanjiDao)
+        wordViewModel.fetchWords(wordDao)
+    }
 
     Box(
         modifier = Modifier
@@ -106,13 +116,13 @@ fun LoginScreen(navController: androidx.navigation.NavHostController) {
                 onClick = {
                     keyboardController?.hide()
                     if (username.isNotEmpty() && password.isNotEmpty()) {
-                        loading = true // Show loading state
+                        loading = true
                         CoroutineScope(Dispatchers.IO).launch {
-                            val success = login(username, password, context)
+                            val success = login(username, password)
                             withContext(Dispatchers.Main) {
-                                loading = false // Reset loading state
+                                loading = false
                                 if (success) {
-                                    navController.navigate("home") // Navigate to the Main Screen
+                                    navController.navigate("home")
                                 } else {
                                     Toast.makeText(
                                         context,
@@ -144,16 +154,12 @@ fun LoginScreen(navController: androidx.navigation.NavHostController) {
     }
 }
 
-suspend fun login(username: String, password: String, context: Context): Boolean {
+suspend fun login(username: String, password: String): Boolean {
     try {
         val user = LoginApi.service.login(username = username, password = password)
-        // If the user exists, return true
-        return user != null
+        return true
     } catch (e: Exception) {
         e.printStackTrace()
-        withContext(Dispatchers.Main) {
-            Toast.makeText(context, "An error occurred. Please try again.", Toast.LENGTH_LONG).show()
-        }
         return false
     }
 }
