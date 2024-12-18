@@ -1,7 +1,9 @@
 package com.gami.tomokanjimobile.ui.composables.words
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.gami.tomokanjimobile.SharedViewModel
 import com.gami.tomokanjimobile.dao.WordDao
 import com.gami.tomokanjimobile.data.Word
 import com.gami.tomokanjimobile.network.WordApi
@@ -10,7 +12,16 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class WordViewModel : ViewModel() {
+class WordViewModelFactory(private val sharedViewModel: SharedViewModel) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(WordViewModel::class.java)) {
+            return WordViewModel(sharedViewModel) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
+}
+
+class WordViewModel(private val sharedViewModel: SharedViewModel) : ViewModel() {
     private val _words = MutableStateFlow<List<Pair<Word, Boolean>>>(emptyList())
     val words: StateFlow<List<Pair<Word, Boolean>>> get() = _words
 
@@ -59,11 +70,10 @@ class WordViewModel : ViewModel() {
         viewModelScope.launch {
             _isLoading.value = true
 
-            val kanjiCount = wordDao.getWordCount()
-            masteredWordIds = WordApi.service.getMasteredWordIds(1)
+            val wordCount = wordDao.getWordCount()
 
-            if(kanjiCount > 0) {
-                val chunkSize = (kanjiCount + 99) / 100
+            if (wordCount > 0) {
+                val chunkSize = (wordCount + 99) / 100
                 val allWords = mutableListOf<Pair<Word, Boolean>>()
 
                 for (i in 0 until 100) {
@@ -71,23 +81,40 @@ class WordViewModel : ViewModel() {
                     _fetchProgress.value += 1
 
                     allWords.addAll(tempWords.map { word ->
-                        Pair(word, masteredWordIds.contains(word.id))
+                        Pair(word, false) // Default the mastery to false initially
                     })
                 }
 
-                _words.value = allWords // Assign the accumulated list of kanjis
-            }
-            else {
+                _words.value = allWords // Assign the accumulated list of words
+            } else {
                 val tempWords = WordApi.service.getWords()
                 wordDao.insertAll(tempWords)
                 _words.value = tempWords.map { word ->
-                    Pair(word, masteredWordIds.contains(word.id))
+                    Pair(word, false) // Default the mastery to false initially
                 }
             }
 
-            fetchWordsForLevel(5)
+            if(sharedViewModel.getLoggedUser() != null) {
+                println("Fetching mastered words")
+                fetchUserMasteredWords()
+            }
 
             _isLoading.value = false
+        }
+    }
+
+    // Fetch the mastered words after login
+    fun fetchUserMasteredWords() {
+        viewModelScope.launch {
+            masteredWordIds = WordApi.service.getMasteredWordIds(sharedViewModel.getUserId())
+
+            _words.update { wordList ->
+                wordList.map { (word, _) ->
+                    Pair(word, masteredWordIds.contains(word.id)) // Update mastery status
+                }
+            }
+
+            fetchWordsForLevel(_currentLevel.value)
         }
     }
 

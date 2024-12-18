@@ -74,26 +74,27 @@ fun KanjiScreen(
                     modifier = Modifier
                         .padding(top = 40.dp, start = 16.dp, bottom = 16.dp)
                 )
-
-                TextField(
-                    value = query,
-                    onValueChange = { viewModel.filterKanjisIds(it) },
-                    placeholder = { Text("Search for a kanji") }, // Use placeholder instead of label
-                    colors = TextFieldDefaults.colors(
-                        unfocusedContainerColor = CustomTheme.colors.backgroundSecondary,
-                        unfocusedTextColor = CustomTheme.colors.textPrimary,
-                        unfocusedLabelColor = CustomTheme.colors.textSecondary,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        focusedContainerColor = CustomTheme.colors.backgroundSecondary,
-                        focusedTextColor = CustomTheme.colors.textPrimary,
-                        focusedIndicatorColor = Color.Transparent,
-                        cursorColor = CustomTheme.colors.textPrimary,
-                        unfocusedPlaceholderColor = CustomTheme.colors.textSecondary,
-                        focusedPlaceholderColor = CustomTheme.colors.textSecondary
-                    ),
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(50.dp)
-                )
+                if(!isLoading) {
+                    TextField(
+                        value = query,
+                        onValueChange = { viewModel.filterKanjisIds(it) },
+                        placeholder = { Text("Search for a kanji") }, // Use placeholder instead of label
+                        colors = TextFieldDefaults.colors(
+                            unfocusedContainerColor = CustomTheme.colors.backgroundSecondary,
+                            unfocusedTextColor = CustomTheme.colors.textPrimary,
+                            unfocusedLabelColor = CustomTheme.colors.textSecondary,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            focusedContainerColor = CustomTheme.colors.backgroundSecondary,
+                            focusedTextColor = CustomTheme.colors.textPrimary,
+                            focusedIndicatorColor = Color.Transparent,
+                            cursorColor = CustomTheme.colors.textPrimary,
+                            unfocusedPlaceholderColor = CustomTheme.colors.textSecondary,
+                            focusedPlaceholderColor = CustomTheme.colors.textSecondary
+                        ),
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(50.dp)
+                    )
+                }
             }
         }
         if (isLoading) {

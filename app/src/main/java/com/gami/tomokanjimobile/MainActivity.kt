@@ -25,36 +25,43 @@ import com.gami.tomokanjimobile.ui.composables.LoginScreen
 import com.gami.tomokanjimobile.ui.composables.home.HomeScreen
 import com.gami.tomokanjimobile.ui.composables.kanjis.KanjiDetail
 import com.gami.tomokanjimobile.ui.composables.kanjis.KanjiViewModel
+import com.gami.tomokanjimobile.ui.composables.kanjis.KanjiViewModelFactory
 import com.gami.tomokanjimobile.ui.composables.navigation.BottomNavigationViewModel
 import com.gami.tomokanjimobile.ui.composables.navigation.PillNavigationBar
 import com.gami.tomokanjimobile.ui.composables.words.WordDetail
 import com.gami.tomokanjimobile.ui.composables.words.WordScreen
 import com.gami.tomokanjimobile.ui.composables.words.WordViewModel
+import com.gami.tomokanjimobile.ui.composables.words.WordViewModelFactory
 import kotlinx.serialization.json.Json
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val kanjiViewModel: KanjiViewModel by viewModels()
-        val wordViewModel: WordViewModel by viewModels()
+        val sharedViewModel: SharedViewModel by viewModels()
+        val kanjiViewModel: KanjiViewModel by viewModels {
+            KanjiViewModelFactory(sharedViewModel)
+        }
+        val wordViewModel: WordViewModel by viewModels() {
+            WordViewModelFactory(sharedViewModel)
+        }
         val bottomNavigationViewModel: BottomNavigationViewModel by viewModels()
 
         enableEdgeToEdge()
         setContent {
-            MainScreen(bottomNavigationViewModel, kanjiViewModel, wordViewModel)
+            MainScreen(sharedViewModel, bottomNavigationViewModel, kanjiViewModel, wordViewModel)
         }
     }
 
 
     @Composable
-    fun MainScreen(bottomNavigationViewModel: BottomNavigationViewModel, kanjiViewModel: KanjiViewModel, wordViewModel: WordViewModel) {
+    fun MainScreen(sharedViewModel: SharedViewModel, bottomNavigationViewModel: BottomNavigationViewModel, kanjiViewModel: KanjiViewModel, wordViewModel: WordViewModel) {
         val navController = rememberNavController()
 
         CustomTheme {
             Box(modifier = Modifier.fillMaxSize()) { // Ensures that the NavHost takes up only the required space
                 NavHost(navController = navController, startDestination = "login") {
-                    composable("login") { LoginScreen(navController, LocalContext.current, kanjiViewModel, wordViewModel) }
+                    composable("login") { LoginScreen(navController, sharedViewModel, LocalContext.current, kanjiViewModel, wordViewModel) }
                     composable("home") { HomeScreen(navController, LocalContext.current) }
                     composable("kanji") {
                         KanjiScreen(kanjiViewModel, bottomNavigationViewModel, navController)

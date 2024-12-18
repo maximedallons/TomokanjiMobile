@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package com.gami.tomokanjimobile.ui.composables
 
 import android.content.Context
@@ -19,16 +17,17 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.gami.tomokanji.ui.theme.CustomTheme
 import com.gami.tomokanjimobile.R
+import com.gami.tomokanjimobile.SharedViewModel
 import com.gami.tomokanjimobile.dao.KanjiDatabaseBuilder
 import com.gami.tomokanjimobile.dao.WordDatabaseBuilder
 import com.gami.tomokanjimobile.network.LoginApi
 import com.gami.tomokanjimobile.ui.composables.kanjis.KanjiViewModel
 import com.gami.tomokanjimobile.ui.composables.words.WordViewModel
 import kotlinx.coroutines.*
-import java.util.concurrent.Executors
+import kotlin.random.Random
 
 @Composable
-fun LoginScreen(navController: NavHostController, context: Context, kanjiViewModel: KanjiViewModel, wordViewModel: WordViewModel) {
+fun LoginScreen(navController: NavHostController, sharedViewModel: SharedViewModel, context: Context, kanjiViewModel: KanjiViewModel, wordViewModel: WordViewModel) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
@@ -42,6 +41,11 @@ fun LoginScreen(navController: NavHostController, context: Context, kanjiViewMod
     LaunchedEffect(Unit) {
         kanjiViewModel.fetchKanjis(kanjiDao)
         wordViewModel.fetchWords(wordDao)
+
+        //print currentCookie sharedPref value
+        val sharedPreferences = context.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+        val currentCookie = sharedPreferences.getString("currentCookie", "")
+        println("currentCookie: $currentCookie")
     }
 
     Box(
@@ -118,10 +122,13 @@ fun LoginScreen(navController: NavHostController, context: Context, kanjiViewMod
                     if (username.isNotEmpty() && password.isNotEmpty()) {
                         loading = true
                         CoroutineScope(Dispatchers.IO).launch {
-                            val success = login(username, password)
+                            val success = login(sharedViewModel, context, username, password)
                             withContext(Dispatchers.Main) {
                                 loading = false
                                 if (success) {
+                                    kanjiViewModel.fetchUserMasteredKanjis()
+                                    wordViewModel.fetchUserMasteredWords()
+
                                     navController.navigate("home")
                                 } else {
                                     Toast.makeText(
@@ -154,12 +161,27 @@ fun LoginScreen(navController: NavHostController, context: Context, kanjiViewMod
     }
 }
 
-suspend fun login(username: String, password: String): Boolean {
+suspend fun login(sharedViewModel: SharedViewModel, context: Context, username: String, password: String): Boolean {
     try {
         val user = LoginApi.service.login(username = username, password = password)
+        sharedViewModel.setLoggedUser(user)
+
+        val randomCookie = generateRandomString(32)
+
+        // Save the cookie in SharedPreferences
+        val sharedPreferences = context.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+        sharedPreferences.edit().putString("currentCookie", randomCookie).apply()
+
         return true
     } catch (e: Exception) {
         e.printStackTrace()
         return false
     }
+}
+
+fun generateRandomString(length: Int): String {
+    val charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+    return (1..length)
+        .map { charset[Random.nextInt(0, charset.length)] }
+        .joinToString("")
 }
