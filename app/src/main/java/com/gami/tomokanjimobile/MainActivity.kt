@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -32,6 +33,7 @@ import com.gami.tomokanjimobile.ui.composables.words.WordDetail
 import com.gami.tomokanjimobile.ui.composables.words.WordScreen
 import com.gami.tomokanjimobile.ui.composables.words.WordViewModel
 import com.gami.tomokanjimobile.ui.composables.words.WordViewModelFactory
+import com.gami.tomokanjimobile.ui.theme.CustomColorScheme
 import kotlinx.serialization.json.Json
 
 class MainActivity : ComponentActivity() {
@@ -59,7 +61,7 @@ class MainActivity : ComponentActivity() {
         val navController = rememberNavController()
 
         CustomTheme {
-            Box(modifier = Modifier.fillMaxSize()) { // Ensures that the NavHost takes up only the required space
+            Box(modifier = Modifier.fillMaxSize().background(CustomTheme.colors.backgroundPrimary)) { // Ensures that the NavHost takes up only the required space
                 NavHost(navController = navController, startDestination = "login") {
                     composable("login") { LoginScreen(navController, sharedViewModel, LocalContext.current, kanjiViewModel, wordViewModel) }
                     composable("home") { HomeScreen(navController, LocalContext.current) }
