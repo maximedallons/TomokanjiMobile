@@ -1,4 +1,4 @@
-package com.gami.tomokanji.ui.theme
+package com.gami.tomokanjimobile.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
@@ -10,6 +10,7 @@ data class CustomColorScheme(
     val textSecondary : Color,
     val backgroundPrimary : Color,
     val backgroundSecondary : Color,
+    val backgroundTertiary : Color,
     val semanticSuccess : Color,
     val semanticError : Color,
     val semanticWarning : Color,
@@ -24,6 +25,7 @@ val ColorPalette = CustomColorScheme(
     textSecondary = Color(0xFF939393),
     backgroundPrimary = Color(0xFF010101),
     backgroundSecondary = Color(0xFF151515),
+    backgroundTertiary = Color(0xFF4c4c4c),
     semanticSuccess = Color(0xFF249689),
     semanticError = Color(0xFFFF5963),
     semanticWarning = Color(0xFFF9CF58),

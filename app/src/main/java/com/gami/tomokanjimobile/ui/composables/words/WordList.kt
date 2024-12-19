@@ -81,7 +81,7 @@ fun WordList(
                                 word = word,
                                 mastered = mastered,
                                 onClick = {
-                                    navController.navigate("word_detail/${Json.encodeToString(word)}/${mastered}")
+                                    navController.navigate("word_detail/${word.id}")
                                 },
                                 showKanas = showKanas,
                                 showTranslations = showTranslations

@@ -1,9 +1,7 @@
 package com.gami.tomokanjimobile.utils
 
 import androidx.room.TypeConverter
-import com.gami.tomokanjimobile.data.User
-import com.gami.tomokanjimobile.data.WordKana
-import com.gami.tomokanjimobile.data.WordKanji
+import com.gami.tomokanjimobile.data.*
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
@@ -52,5 +50,25 @@ class Converters {
     @TypeConverter
     fun fromJsonToUser(json: String?): User? {
         return Gson().fromJson(json, object : TypeToken<User>() {}.type)
+    }
+
+    @TypeConverter
+    fun fromExamplesListToJson(examples: List<Example>?): String? {
+        return Gson().toJson(examples)
+    }
+
+    @TypeConverter
+    fun fromJsonToExamplesList(json: String?): List<Example>? {
+        return Gson().fromJson(json, object : TypeToken<List<Example>>() {}.type)
+    }
+
+    @TypeConverter
+    fun fromSentencesListToJson(sentences: List<Sentence>?): String? {
+        return Gson().toJson(sentences)
+    }
+
+    @TypeConverter
+    fun fromJsonToSentencesList(json: String?): List<Sentence>? {
+        return Gson().fromJson(json, object : TypeToken<List<Sentence>>() {}.type)
     }
 }

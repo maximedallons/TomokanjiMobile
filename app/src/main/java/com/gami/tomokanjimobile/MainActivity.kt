@@ -67,36 +67,30 @@ class MainActivity : ComponentActivity() {
                         KanjiScreen(kanjiViewModel, bottomNavigationViewModel, navController)
                     }
                     composable(
-                        route = "kanji_detail/{kanjiJson}/{mastered}",
+                        route = "kanji_detail/{id}",
                         arguments = listOf(
-                            navArgument("kanjiJson") { type = NavType.StringType },
-                            navArgument("mastered") { type = NavType.BoolType }
+                            navArgument("id") { type = NavType.IntType },
                         )
                     ) { backStackEntry ->
-                        val kanjiJson = backStackEntry.arguments?.getString("kanjiJson")
-                        val mastered = backStackEntry.arguments?.getBoolean("mastered") ?: false
+                        val id = backStackEntry.arguments?.getInt("id")
 
-                        if (!kanjiJson.isNullOrEmpty()) {
-                            val kanji = Json.decodeFromString<Kanji>(kanjiJson)
-                            KanjiDetail(kanji, mastered, navController, kanjiViewModel)
+                        if(id != null) {
+                            KanjiDetail(id, navController, sharedViewModel, kanjiViewModel)
                         }
                     }
                     composable("word") {
                         WordScreen(wordViewModel, bottomNavigationViewModel, navController)
                     }
                     composable(
-                        route = "word_detail/{wordJson}/{mastered}",
+                        route = "word_detail/{id}",
                         arguments = listOf(
-                            navArgument("wordJson") { type = NavType.StringType },
-                            navArgument("mastered") { type = NavType.BoolType }
+                            navArgument("id") { type = NavType.IntType },
                         )
                     ) { backStackEntry ->
-                        val wordJson = backStackEntry.arguments?.getString("wordJson")
-                        val mastered = backStackEntry.arguments?.getBoolean("mastered") ?: false
+                        val id = backStackEntry.arguments?.getInt("id")
 
-                        if (!wordJson.isNullOrEmpty()) {
-                            val word = Json.decodeFromString<Word>(wordJson)
-                            WordDetail(word, mastered, navController, wordViewModel)
+                        if (id != null) {
+                            WordDetail(id, navController, sharedViewModel, wordViewModel)
                         }
                     }
                 }

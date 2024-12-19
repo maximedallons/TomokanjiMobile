@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.gami.tomokanjimobile.SharedViewModel
 import com.gami.tomokanjimobile.dao.WordDao
+import com.gami.tomokanjimobile.data.Kanji
 import com.gami.tomokanjimobile.data.Word
 import com.gami.tomokanjimobile.network.WordApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,9 +23,6 @@ class WordViewModelFactory(private val sharedViewModel: SharedViewModel) : ViewM
 }
 
 class WordViewModel(private val sharedViewModel: SharedViewModel) : ViewModel() {
-    private val _words = MutableStateFlow<List<Pair<Word, Boolean>>>(emptyList())
-    val words: StateFlow<List<Pair<Word, Boolean>>> get() = _words
-
     private val _filteredWords = MutableStateFlow<List<Pair<Word, Boolean>>>(emptyList())
     val filteredWords: StateFlow<List<Pair<Word, Boolean>>> get() = _filteredWords
 
@@ -61,9 +59,11 @@ class WordViewModel(private val sharedViewModel: SharedViewModel) : ViewModel() 
     }
 
     fun updateWordMastery(wordId: Int, isMastered: Boolean) {
-        _words.update { wordList ->
-            wordList.map { if (it.first.id == wordId) Pair(it.first, isMastered) else it }
-        }
+        sharedViewModel.updateWords(
+            sharedViewModel.words.value.map { (word, mastered) ->
+                if (word.id == wordId) Pair(word, isMastered) else Pair(word, mastered)
+            }
+        )
     }
 
     fun fetchWords(wordDao: WordDao) {
@@ -85,13 +85,13 @@ class WordViewModel(private val sharedViewModel: SharedViewModel) : ViewModel() 
                     })
                 }
 
-                _words.value = allWords // Assign the accumulated list of words
+                sharedViewModel.updateWords(allWords)
             } else {
                 val tempWords = WordApi.service.getWords()
                 wordDao.insertAll(tempWords)
-                _words.value = tempWords.map { word ->
+                sharedViewModel.updateWords(tempWords.map { word ->
                     Pair(word, false) // Default the mastery to false initially
-                }
+                })
             }
 
             if(sharedViewModel.getLoggedUser() != null) {
@@ -108,18 +108,26 @@ class WordViewModel(private val sharedViewModel: SharedViewModel) : ViewModel() 
         viewModelScope.launch {
             masteredWordIds = WordApi.service.getMasteredWordIds(sharedViewModel.getUserId())
 
-            _words.update { wordList ->
-                wordList.map { (word, _) ->
+            sharedViewModel.updateWords(
+                sharedViewModel.words.value.map { (word, mastered) ->
                     Pair(word, masteredWordIds.contains(word.id)) // Update mastery status
                 }
-            }
+            )
 
             fetchWordsForLevel(_currentLevel.value)
         }
     }
 
     fun fetchWordsForLevel(level: Int) {
-        _filteredWords.value = _words.value.filter { it.first.level == level }
+        _filteredWords.value = sharedViewModel.words.value.filter { it.first.level == level }
+    }
+
+    fun fetchWordById(id: Int) : Word {
+        return sharedViewModel.words.value.first { it.first.id == id }.first
+    }
+
+    fun isMastered(id: Int) : Boolean {
+        return sharedViewModel.words.value.first { it.first.id == id }.second
     }
 
     fun filterWordsIds(query: String) {
@@ -130,7 +138,7 @@ class WordViewModel(private val sharedViewModel: SharedViewModel) : ViewModel() 
             return
         }
 
-        _filteredWords.value = _words.value.filter {
+        _filteredWords.value = sharedViewModel.words.value.filter {
             it.first.kanjis.any { kanji ->
                 kanji.text.contains(query, ignoreCase = true)
             } ||
@@ -141,5 +149,9 @@ class WordViewModel(private val sharedViewModel: SharedViewModel) : ViewModel() 
                 translation.contains(query, ignoreCase = true)
             }
         }
+    }
+
+    fun fetchKanjiByCharacter(character: String): Kanji? {
+        return sharedViewModel.kanjis.value.firstOrNull { it.first.character == character }?.first
     }
 }

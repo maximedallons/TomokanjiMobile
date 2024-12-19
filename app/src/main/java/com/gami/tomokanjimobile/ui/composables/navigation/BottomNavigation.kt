@@ -112,15 +112,17 @@ fun PillNavigationBar(
                         isSelected = currentRoute?.startsWith(screen) == true,
                         isClickableGlobal = isClickableGlobal, // Pass global state
                         onClick = {
+                            println("Navigating to $screen from $currentRoute")
                             if (currentRoute != screen) { // Prevent navigating to the same tab
                                 isClickableGlobal = false // Disable clicks globally
                                 bottomNavigationViewModel.clearCenterButtons()
                                 navController.navigate(screen) {
-                                    popUpTo(navController.graph.startDestinationId) {
-                                        saveState = true
+                                    navController.graph.startDestinationRoute?.let { route ->
+                                        popUpTo(route) {
+                                            inclusive = true
+                                        }
                                     }
                                     launchSingleTop = true
-                                    restoreState = true
                                 }
                             }
                         }

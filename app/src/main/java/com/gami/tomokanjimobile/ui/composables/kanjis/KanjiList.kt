@@ -98,7 +98,7 @@ fun KanjiList(
                                 kanji = kanji,
                                 mastered = mastered,
                                 onClick = {
-                                    navController.navigate("kanji_detail/${Json.encodeToString(kanji)}/${mastered}")
+                                    navController.navigate("kanji_detail/${kanji.id}")
                                 },
                                 showKunyomi = showKunyomi
                             )

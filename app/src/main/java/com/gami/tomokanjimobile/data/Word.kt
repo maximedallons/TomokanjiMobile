@@ -16,6 +16,18 @@ data class WordKana(
     val common: Boolean
 )
 
+@Serializable
+data class Example(
+    val text: String,
+    val sentences: List<Sentence>
+)
+
+@Serializable
+data class Sentence(
+    val lang: String,
+    val text: String
+)
+
 @Entity(tableName = "word_table")
 @Serializable
 data class Word(
@@ -23,6 +35,6 @@ data class Word(
     val kanjis: List<WordKanji> = emptyList(),
     val kanas: List<WordKana> = emptyList(),
     val translations: List<String> = emptyList(),
-    val examples: List<String> = emptyList(),
+    val examples: List<Example> = emptyList(),
     val level: Int = 0,
 )

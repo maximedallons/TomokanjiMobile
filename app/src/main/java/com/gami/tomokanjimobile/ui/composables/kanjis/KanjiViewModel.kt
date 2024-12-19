@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.gami.tomokanjimobile.SharedViewModel
 import com.gami.tomokanjimobile.dao.KanjiDao
 import com.gami.tomokanjimobile.data.Kanji
+import com.gami.tomokanjimobile.data.Word
 import com.gami.tomokanjimobile.network.KanjiApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,9 +23,6 @@ class KanjiViewModelFactory(private val sharedViewModel: SharedViewModel) : View
 }
 
 class KanjiViewModel(private val sharedViewModel: SharedViewModel) : ViewModel() {
-    private val _kanjis = MutableStateFlow<List<Pair<Kanji, Boolean>>>(emptyList())
-    val kanjis: StateFlow<List<Pair<Kanji, Boolean>>> get() = _kanjis
-
     private val _filteredKanjis = MutableStateFlow<List<Pair<Kanji, Boolean>>>(emptyList())
     val filteredKanjis: StateFlow<List<Pair<Kanji, Boolean>>> get() = _filteredKanjis
 
@@ -54,9 +52,11 @@ class KanjiViewModel(private val sharedViewModel: SharedViewModel) : ViewModel()
     }
 
     fun updateKanjiMastery(kanjiId: Int, isMastered: Boolean) {
-        _kanjis.update { kanjiList ->
-            kanjiList.map { if (it.first.id == kanjiId) Pair(it.first, isMastered) else it }
-        }
+        sharedViewModel.updateKanjis(
+            sharedViewModel.kanjis.value.map { (kanji, mastered) ->
+                if (kanji.id == kanjiId) Pair(kanji, isMastered) else Pair(kanji, mastered)
+            }
+        )
     }
 
     fun fetchKanjis(kanjiDao: KanjiDao) {
@@ -78,13 +78,13 @@ class KanjiViewModel(private val sharedViewModel: SharedViewModel) : ViewModel()
                     })
                 }
 
-                _kanjis.value = allKanjis // Assign the accumulated list of kanjis
+                sharedViewModel.updateKanjis(allKanjis)
             } else {
                 val tempKanjis = KanjiApi.service.getKanjis()
                 kanjiDao.insertAll(tempKanjis)
-                _kanjis.value = tempKanjis.map { kanji ->
+                sharedViewModel.updateKanjis(tempKanjis.map { kanji ->
                     Pair(kanji, false) // Default the mastery to false initially
-                }
+                })
             }
 
             if(sharedViewModel.getLoggedUser() != null) {
@@ -101,18 +101,26 @@ class KanjiViewModel(private val sharedViewModel: SharedViewModel) : ViewModel()
         viewModelScope.launch {
             masteredKanjiIds = KanjiApi.service.getMasteredKanjiIds(sharedViewModel.getUserId())
 
-            _kanjis.update { kanjiList ->
-                kanjiList.map { (kanji, _) ->
+            sharedViewModel.updateKanjis(
+                sharedViewModel.kanjis.value.map { (kanji, _) ->
                     Pair(kanji, masteredKanjiIds.contains(kanji.id)) // Update mastery status
                 }
-            }
+            )
 
             fetchKanjisForLevel(_currentLevel.value)
         }
     }
 
+    fun fetchKanjiById(id: Int) : Kanji {
+        return sharedViewModel.kanjis.value.first { it.first.id == id }.first
+    }
+
+    fun isMastered(id: Int) : Boolean {
+        return sharedViewModel.kanjis.value.first { it.first.id == id }.second
+    }
+
     fun fetchKanjisForLevel(level: Int) {
-        _filteredKanjis.value = _kanjis.value.filter { it.first.level == level }
+        _filteredKanjis.value = sharedViewModel.kanjis.value.filter { it.first.level == level }
     }
 
     fun filterKanjisIds(query: String) {
@@ -123,7 +131,7 @@ class KanjiViewModel(private val sharedViewModel: SharedViewModel) : ViewModel()
             return
         }
 
-        _filteredKanjis.value = _kanjis.value.filter {
+        _filteredKanjis.value = sharedViewModel.kanjis.value.filter {
             it.first.character.contains(query, ignoreCase = true) ||
             it.first.meanings.any { meaning ->
                 meaning.contains(query, ignoreCase = true)
@@ -135,5 +143,10 @@ class KanjiViewModel(private val sharedViewModel: SharedViewModel) : ViewModel()
                 kunyomi.contains(query, ignoreCase = true)
             }
         }
+    }
+
+    fun fetchWordsByKanjiText(kanjiText: String) : List<Word> {
+        return sharedViewModel.words.value.filter { it.first.kanjis.any { kanji -> kanji.text.contains(kanjiText, ignoreCase = true) } }
+            .map { it.first }
     }
 }
