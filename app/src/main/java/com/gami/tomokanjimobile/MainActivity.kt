@@ -24,6 +24,7 @@ import com.gami.tomokanjimobile.data.Kanji
 import com.gami.tomokanjimobile.data.Word
 import com.gami.tomokanjimobile.ui.composables.LoginScreen
 import com.gami.tomokanjimobile.ui.composables.home.HomeScreen
+import com.gami.tomokanjimobile.ui.composables.kanas.*
 import com.gami.tomokanjimobile.ui.composables.kanjis.KanjiDetail
 import com.gami.tomokanjimobile.ui.composables.kanjis.KanjiViewModel
 import com.gami.tomokanjimobile.ui.composables.kanjis.KanjiViewModelFactory
@@ -47,24 +48,54 @@ class MainActivity : ComponentActivity() {
         val wordViewModel: WordViewModel by viewModels() {
             WordViewModelFactory(sharedViewModel)
         }
+        val kanaViewModel: KanaViewModel by viewModels() {
+            KanaViewModelFactory(sharedViewModel)
+        }
         val bottomNavigationViewModel: BottomNavigationViewModel by viewModels()
 
         enableEdgeToEdge()
         setContent {
-            MainScreen(sharedViewModel, bottomNavigationViewModel, kanjiViewModel, wordViewModel)
+            MainScreen(sharedViewModel, bottomNavigationViewModel, kanaViewModel, kanjiViewModel, wordViewModel)
         }
     }
 
 
     @Composable
-    fun MainScreen(sharedViewModel: SharedViewModel, bottomNavigationViewModel: BottomNavigationViewModel, kanjiViewModel: KanjiViewModel, wordViewModel: WordViewModel) {
+    fun MainScreen(sharedViewModel: SharedViewModel, bottomNavigationViewModel: BottomNavigationViewModel, kanaViewModel : KanaViewModel, kanjiViewModel: KanjiViewModel, wordViewModel: WordViewModel) {
         val navController = rememberNavController()
 
         CustomTheme {
             Box(modifier = Modifier.fillMaxSize().background(CustomTheme.colors.backgroundPrimary)) { // Ensures that the NavHost takes up only the required space
                 NavHost(navController = navController, startDestination = "login") {
-                    composable("login") { LoginScreen(navController, sharedViewModel, LocalContext.current, kanjiViewModel, wordViewModel) }
-                    composable("home") { HomeScreen(sharedViewModel, kanjiViewModel, wordViewModel, navController, LocalContext.current) }
+                    composable("login") { LoginScreen(navController, sharedViewModel, LocalContext.current, kanaViewModel, kanjiViewModel, wordViewModel) }
+                    composable("home") { HomeScreen(sharedViewModel, kanaViewModel, kanjiViewModel, wordViewModel, navController, LocalContext.current) }
+                    composable("kana") {
+                        KanaScreen(kanaViewModel, bottomNavigationViewModel, navController)
+                    }
+                    composable(
+                        "kana_hiragana_detail/{id}",
+                        arguments = listOf(
+                            navArgument("id") { type = NavType.IntType },
+                        )
+                    ) { backStackEntry ->
+                        val id = backStackEntry.arguments?.getInt("id")
+
+                        if(id != null) {
+                            HiraganaDetail(id, navController, sharedViewModel, bottomNavigationViewModel, kanaViewModel)
+                        }
+                    }
+                    composable(
+                        "kana_katakana_detail/{id}",
+                        arguments = listOf(
+                            navArgument("id") { type = NavType.IntType },
+                        )
+                    ) { backStackEntry ->
+                        val id = backStackEntry.arguments?.getInt("id")
+
+                        if(id != null) {
+                            KatakanaDetail(id, navController, sharedViewModel, bottomNavigationViewModel, kanaViewModel)
+                        }
+                    }
                     composable("kanji") {
                         KanjiScreen(kanjiViewModel, bottomNavigationViewModel, navController)
                     }
@@ -77,7 +108,7 @@ class MainActivity : ComponentActivity() {
                         val id = backStackEntry.arguments?.getInt("id")
 
                         if(id != null) {
-                            KanjiDetail(id, navController, sharedViewModel, kanjiViewModel)
+                            KanjiDetail(id, navController, sharedViewModel, bottomNavigationViewModel, kanjiViewModel)
                         }
                     }
                     composable("word") {
@@ -92,7 +123,7 @@ class MainActivity : ComponentActivity() {
                         val id = backStackEntry.arguments?.getInt("id")
 
                         if (id != null) {
-                            WordDetail(id, navController, sharedViewModel, wordViewModel)
+                            WordDetail(id, navController, sharedViewModel, bottomNavigationViewModel, wordViewModel)
                         }
                     }
                 }

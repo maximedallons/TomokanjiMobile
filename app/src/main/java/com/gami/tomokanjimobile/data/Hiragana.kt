@@ -2,6 +2,7 @@ package com.gami.tomokanjimobile.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Entity(tableName = "hiragana_table")

@@ -18,16 +18,19 @@ import androidx.navigation.NavHostController
 import com.gami.tomokanji.ui.theme.CustomTheme
 import com.gami.tomokanjimobile.R
 import com.gami.tomokanjimobile.SharedViewModel
+import com.gami.tomokanjimobile.dao.HiraganaDatabaseBuilder
 import com.gami.tomokanjimobile.dao.KanjiDatabaseBuilder
+import com.gami.tomokanjimobile.dao.KatakanaDatabaseBuilder
 import com.gami.tomokanjimobile.dao.WordDatabaseBuilder
 import com.gami.tomokanjimobile.network.LoginApi
+import com.gami.tomokanjimobile.ui.composables.kanas.KanaViewModel
 import com.gami.tomokanjimobile.ui.composables.kanjis.KanjiViewModel
 import com.gami.tomokanjimobile.ui.composables.words.WordViewModel
 import kotlinx.coroutines.*
 import kotlin.random.Random
 
 @Composable
-fun LoginScreen(navController: NavHostController, sharedViewModel: SharedViewModel, context: Context, kanjiViewModel: KanjiViewModel, wordViewModel: WordViewModel) {
+fun LoginScreen(navController: NavHostController, sharedViewModel: SharedViewModel, context: Context, kanaViewModel: KanaViewModel, kanjiViewModel: KanjiViewModel, wordViewModel: WordViewModel) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
@@ -37,10 +40,14 @@ fun LoginScreen(navController: NavHostController, sharedViewModel: SharedViewMod
 
     val kanjiDao = KanjiDatabaseBuilder.getInstance(context).kanjiDao()
     val wordDao = WordDatabaseBuilder.getInstance(context).wordDao()
+    val hiraganaDao = HiraganaDatabaseBuilder.getInstance(context).hiraganaDao()
+    val katakanaDao = KatakanaDatabaseBuilder.getInstance(context).katakanaDao()
 
     LaunchedEffect(Unit) {
         kanjiViewModel.fetchKanjis(kanjiDao)
         wordViewModel.fetchWords(wordDao)
+        kanaViewModel.fetchHiraganas(hiraganaDao)
+        kanaViewModel.fetchKatakanas(katakanaDao)
 
         //print currentCookie sharedPref value
         val sharedPreferences = context.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
@@ -126,7 +133,26 @@ fun LoginScreen(navController: NavHostController, sharedViewModel: SharedViewMod
                             withContext(Dispatchers.Main) {
                                 loading = false
                                 if (success) {
-                                    navController.navigate("home")
+                                    if(sharedViewModel.hiraganas.value.isNotEmpty()) {
+                                        kanaViewModel.fetchUserMasteredHiraganas()
+                                    }
+                                    if(sharedViewModel.katakanas.value.isNotEmpty()) {
+                                        kanaViewModel.fetchUserMasteredKatakanas()
+                                    }
+                                    if(sharedViewModel.kanjis.value.isNotEmpty()) {
+                                        kanjiViewModel.fetchUserMasteredKanjis()
+                                    }
+                                    if(sharedViewModel.words.value.isNotEmpty()) {
+                                        wordViewModel.fetchUserMasteredWords()
+                                    }
+                                    navController.navigate("home") {
+                                        navController.graph.startDestinationRoute?.let { route ->
+                                            popUpTo(route) {
+                                                inclusive = true
+                                            }
+                                        }
+                                        launchSingleTop = true
+                                    }
                                 } else {
                                     Toast.makeText(
                                         context,

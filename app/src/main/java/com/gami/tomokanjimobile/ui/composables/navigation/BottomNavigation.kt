@@ -32,7 +32,7 @@ fun PillNavigationBar(
     modifier: Modifier
 ) {
     var isClickableGlobal by remember { mutableStateOf(true) }
-    val screens = listOf("home", "kanji", "word")
+    val screens = listOf("home", "kana", "kanji", "word")
     val pillColor = CustomTheme.colors.backgroundSecondary
     val pillHeight = 50.dp
     val pillHorizontalPadding = 24.dp

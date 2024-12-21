@@ -27,6 +27,8 @@ import com.gami.tomokanjimobile.SharedViewModel
 import com.gami.tomokanjimobile.data.Kanji
 import com.gami.tomokanjimobile.data.Word
 import com.gami.tomokanjimobile.network.WordApi
+import com.gami.tomokanjimobile.ui.composables.navigation.BottomNavigationViewModel
+import com.gami.tomokanjimobile.ui.composables.navigation.CircleButton
 import kotlinx.coroutines.launch
 
 @Composable
@@ -34,10 +36,39 @@ fun WordDetail(
     id: Int,
     navController: NavController,
     sharedViewModel: SharedViewModel,
+    bottomNavigationViewModel: BottomNavigationViewModel,
     viewModel: WordViewModel
 ) {
     val word = viewModel.fetchWordById(id)
     var mastered by remember { mutableStateOf(viewModel.isMastered(id)) }
+
+    val defaultColor = CustomTheme.colors.backgroundSecondary
+    val selectedColor = CustomTheme.colors.primary
+    val currentLevel = word.level
+    LaunchedEffect(Unit) {
+        viewModel.updateCurrentLevel(currentLevel)
+        bottomNavigationViewModel.clearCenterButtons()
+        for(i in 5 downTo 1) {
+            val color = if(i == currentLevel) selectedColor else defaultColor
+            bottomNavigationViewModel.addCenterButton(
+                CircleButton(
+                    label = "N$i",
+                    onClick = {
+                        viewModel.updateCurrentLevel(i)
+                        navController.navigate("word") {
+                            navController.graph.startDestinationRoute?.let { route ->
+                                popUpTo(route) {
+                                    inclusive = true
+                                }
+                            }
+                            launchSingleTop = true
+                        }
+                    },
+                    background = color
+                )
+            )
+        }
+    }
 
     LaunchedEffect(mastered) {}
 
@@ -100,9 +131,9 @@ fun WordDetail(
                             // Update the server in the background
                             coroutineScope.launch {
                                 if (mastered) {
-                                    WordApi.service.masterWord(1, word.id)
+                                    WordApi.service.masterWord(sharedViewModel.getUserId(), word.id)
                                 } else {
-                                    WordApi.service.unmasterWord(1, word.id)
+                                    WordApi.service.unmasterWord(sharedViewModel.getUserId(), word.id)
                                 }
                             }
                         }
@@ -288,7 +319,16 @@ fun WordDetail(
                                                     .padding(16.dp, 8.dp)
                                                     .height(64.dp) // Set each item's height to 64.dp
                                                     .border(2.dp, wordBorderColor, RoundedCornerShape(16.dp))
-                                                    .clickable { navController.navigate("kanji_detail/${kanji.id}") },
+                                                    .clickable {
+                                                        navController.navigate("kanji_detail/${kanji.id}") {
+                                                            navController.graph.startDestinationRoute?.let { route ->
+                                                                popUpTo(route) {
+                                                                    inclusive = true
+                                                                }
+                                                            }
+                                                            launchSingleTop = true
+                                                        }
+                                                               },
                                                 verticalAlignment = Alignment.CenterVertically
                                             ) {
                                                 Column(modifier = Modifier.weight(1f)) {

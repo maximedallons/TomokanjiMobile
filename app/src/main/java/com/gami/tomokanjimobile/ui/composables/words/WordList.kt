@@ -15,8 +15,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.gami.tomokanji.ui.theme.CustomTheme
 import com.gami.tomokanjimobile.data.Word
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 
 @Composable
 fun WordList(
@@ -81,7 +79,14 @@ fun WordList(
                                 word = word,
                                 mastered = mastered,
                                 onClick = {
-                                    navController.navigate("word_detail/${word.id}")
+                                    navController.navigate("word_detail/${word.id}") {
+                                        navController.graph.startDestinationRoute?.let { route ->
+                                            popUpTo(route) {
+                                                inclusive = true
+                                            }
+                                        }
+                                        launchSingleTop = true
+                                    }
                                 },
                                 showKanas = showKanas,
                                 showTranslations = showTranslations
@@ -107,21 +112,6 @@ fun WordList(
                     }
                 }
             }
-
-            // Sidebar with dividers
-//            Box(
-//                modifier = Modifier
-//                    .fillMaxHeight()
-//                    .weight(0.10f)
-//                    .background(CustomTheme.colors.backgroundPrimary)
-//            ) {
-//                DividerLinks(
-//                    dividers = dividers,
-//                    currentDividerIndex = currentDividerIndex,
-//                    listState = listState,
-//                    coroutineScope = coroutineScope
-//                )
-//            }
         }
     }
 }

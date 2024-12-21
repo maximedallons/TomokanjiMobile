@@ -27,17 +27,48 @@ import com.gami.tomokanjimobile.SharedViewModel
 import com.gami.tomokanjimobile.data.Kanji
 import com.gami.tomokanjimobile.network.KanjiApi
 import com.gami.tomokanjimobile.network.WordApi
+import com.gami.tomokanjimobile.ui.composables.navigation.BottomNavigationViewModel
+import com.gami.tomokanjimobile.ui.composables.navigation.CircleButton
 import kotlinx.coroutines.launch
 
 @Composable
 fun KanjiDetail(id : Int,
                 navController: NavController,
                 sharedViewModel: SharedViewModel,
+                bottomNavigationViewModel: BottomNavigationViewModel,
                 viewModel: KanjiViewModel
 ) {
     val coroutineScope = rememberCoroutineScope()
     val kanji = viewModel.fetchKanjiById(id)
     var mastered by remember { mutableStateOf(viewModel.isMastered(id)) }
+
+    val defaultColor = CustomTheme.colors.backgroundSecondary
+    val selectedColor = CustomTheme.colors.primary
+    val currentLevel = kanji.level
+    LaunchedEffect(Unit) {
+        viewModel.updateCurrentLevel(currentLevel)
+        bottomNavigationViewModel.clearCenterButtons()
+        for(i in 5 downTo 1) {
+            val color = if(i == currentLevel) selectedColor else defaultColor
+            bottomNavigationViewModel.addCenterButton(
+                CircleButton(
+                    label = "N$i",
+                    onClick = {
+                        viewModel.updateCurrentLevel(i)
+                        navController.navigate("kanji") {
+                            navController.graph.startDestinationRoute?.let { route ->
+                                popUpTo(route) {
+                                    inclusive = true
+                                }
+                            }
+                            launchSingleTop = true
+                        }
+                    },
+                    background = color
+                )
+            )
+        }
+    }
 
     LaunchedEffect(mastered) {}
 
@@ -99,9 +130,9 @@ fun KanjiDetail(id : Int,
                             // Update the server in the background
                             coroutineScope.launch {
                                 if (mastered) {
-                                    KanjiApi.service.masterKanji(1, kanji.id)
+                                    KanjiApi.service.masterKanji(sharedViewModel.getUserId(), kanji.id)
                                 } else {
-                                    KanjiApi.service.unmasterKanji(1, kanji.id)
+                                    KanjiApi.service.unmasterKanji(sharedViewModel.getUserId(), kanji.id)
                                 }
                             }
                         }
@@ -220,7 +251,16 @@ fun KanjiDetail(id : Int,
                                             .padding(16.dp, 8.dp)
                                             .height(64.dp) // Set each item's height to 64.dp
                                             .border(2.dp, wordBorderColor, RoundedCornerShape(16.dp))
-                                            .clickable { navController.navigate("word_detail/${word.id}") },
+                                            .clickable {
+                                                navController.navigate("word_detail/${word.id}") {
+                                                    navController.graph.startDestinationRoute?.let { route ->
+                                                        popUpTo(route) {
+                                                            inclusive = true
+                                                        }
+                                                    }
+                                                    launchSingleTop = true
+                                                }
+                                                       },
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Column(modifier = Modifier.weight(1f)) {

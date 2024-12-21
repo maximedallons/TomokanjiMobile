@@ -19,29 +19,15 @@ import androidx.navigation.NavController
 import com.gami.tomokanji.ui.theme.CustomTheme
 import com.gami.tomokanjimobile.R
 import com.gami.tomokanjimobile.data.Kanji
-import com.gami.tomokanjimobile.ui.composables.navigation.DividerLinks
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 
 @Composable
 fun KanjiList(
     viewModel: KanjiViewModel,
-    navController: NavController,
-    coroutineScope: CoroutineScope
+    navController: NavController
 ) {
     val kanjis by viewModel.filteredKanjis.collectAsState()
     val showKunyomi by viewModel.showKunyomi.collectAsState()
     val listState = rememberLazyGridState()
-
-    // Monitor the current first visible item in the list
-    val currentDividerIndex by remember {
-        derivedStateOf {
-            val firstVisibleIndex = listState.firstVisibleItemIndex
-            val visibleIndex = listState.layoutInfo.visibleItemsInfo.firstOrNull()?.index ?: 0
-            visibleIndex
-        }
-    }
 
     // Process the Kanji list and create a grid with dividers
     val kanjiGridItems: List<KanjiGridItem> = remember(kanjis) {
@@ -59,10 +45,6 @@ fun KanjiList(
             items.add(KanjiGridItem.KanjiItem(kanji))
         }
         items
-    }
-
-    val dividers: List<Pair<String, Int>> = kanjiGridItems.mapIndexedNotNull { index, item ->
-        if (item is KanjiGridItem.Divider) Pair(item.rangeText.split("-")[0].trim(), index) else null
     }
 
     Box(
@@ -98,7 +80,14 @@ fun KanjiList(
                                 kanji = kanji,
                                 mastered = mastered,
                                 onClick = {
-                                    navController.navigate("kanji_detail/${kanji.id}")
+                                    navController.navigate("kanji_detail/${kanji.id}") {
+                                        navController.graph.startDestinationRoute?.let { route ->
+                                            popUpTo(route) {
+                                                inclusive = true
+                                            }
+                                        }
+                                        launchSingleTop = true
+                                    }
                                 },
                                 showKunyomi = showKunyomi
                             )
@@ -123,21 +112,6 @@ fun KanjiList(
                     }
                 }
             }
-
-            // Sidebar with dividers
-//            Box(
-//                modifier = Modifier
-//                    .fillMaxHeight()
-//                    .weight(0.10f)
-//                    .background(CustomTheme.colors.backgroundPrimary)
-//            ) {
-//                DividerLinks(
-//                    dividers = dividers,
-//                    currentDividerIndex = currentDividerIndex,
-//                    listState = listState,
-//                    coroutineScope = coroutineScope
-//                )
-//            }
         }
 
         // Floating Action Button for toggling Kunyomi

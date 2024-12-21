@@ -1,4 +1,4 @@
-package com.gami.tomokanjimobile.ui.composables.kanjis
+package com.gami.tomokanjimobile.ui.composables.kanas
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -10,21 +10,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.gami.tomokanji.ui.theme.CustomTheme
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.gami.tomokanjimobile.ui.composables.kanjis.KanjiList
 import com.gami.tomokanjimobile.ui.composables.navigation.BottomNavigationViewModel
 import com.gami.tomokanjimobile.ui.composables.navigation.CircleButton
 
 @Composable
-fun KanjiScreen(
-    viewModel: KanjiViewModel = viewModel(),
+fun KanaScreen(
+    viewModel: KanaViewModel = viewModel(),
     bottomNavigationViewModel: BottomNavigationViewModel,
     navController: NavController
 ) {
     val coroutineScope = rememberCoroutineScope()
 
-    val currentLevel by viewModel.currentLevel.collectAsState()
+    val currentType by viewModel.currentType.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val fetchProgress by viewModel.fetchProgress.collectAsState()
 
@@ -33,30 +34,32 @@ fun KanjiScreen(
     val defaultColor = CustomTheme.colors.backgroundSecondary
     val selectedColor = CustomTheme.colors.primary
 
-    LaunchedEffect(currentLevel) {
+    LaunchedEffect(currentType) {
         bottomNavigationViewModel.clearCenterButtons()
-        for(i in 5 downTo 1) {
-            val color = if(i == currentLevel) selectedColor else defaultColor
-            bottomNavigationViewModel.addCenterButton(
-                CircleButton(
-                    label = "N$i",
-                    onClick = {
-                        viewModel.updateCurrentLevel(i)
-                    },
-                    background = color
-                )
+        bottomNavigationViewModel.addCenterButton(
+            CircleButton(
+                label = "Hiragana",
+                onClick = {
+                    viewModel.updateCurrentType("H")
+                },
+                background = if(currentType == "H") selectedColor else defaultColor
             )
-        }
+        )
+        bottomNavigationViewModel.addCenterButton(
+            CircleButton(
+                label = "Katakana",
+                onClick = {
+                    viewModel.updateCurrentType("K")
+                },
+                background = if(currentType == "K") selectedColor else defaultColor
+            )
+        )
 
-        if(viewModel.query.value.isNotEmpty()) {
-            viewModel.filterKanjisIds(viewModel.query.value)
-        } else {
-            viewModel.fetchKanjisForLevel(currentLevel)
-        }
+        viewModel.filterKanas(viewModel.query.value)
     }
 
     Column {
-        Row (
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight(0.2f)
@@ -67,18 +70,23 @@ fun KanjiScreen(
                     .fillMaxWidth()
                     .fillMaxHeight()
             ) {
+                val text = if(currentType == "H") "Hiraganas" else "Katakanas"
                 Text(
-                    text = "Kanjis",
+                    text = text,
                     fontSize = 24.sp,
                     color = CustomTheme.colors.textPrimary,
                     modifier = Modifier
                         .padding(top = 60.dp, start = 16.dp, bottom = 16.dp)
                 )
-                if(!isLoading) {
+                if (!isLoading) {
                     TextField(
                         value = query,
-                        onValueChange = { viewModel.filterKanjisIds(it) },
-                        placeholder = { Text("Search for a kanji") }, // Use placeholder instead of label
+                        onValueChange = {
+                            if (currentType == "H") viewModel.filterHiraganasIds(it) else viewModel.filterKatakanasIds(
+                                it
+                            )
+                        },
+                        placeholder = { if (currentType == "H") Text("Search for a Hiragana") else Text("Search for a Katakana") }, // Use placeholder instead of label
                         colors = TextFieldDefaults.colors(
                             unfocusedContainerColor = CustomTheme.colors.backgroundSecondary,
                             unfocusedTextColor = CustomTheme.colors.textPrimary,
@@ -97,7 +105,8 @@ fun KanjiScreen(
                 }
             }
         }
-        if (isLoading) {
+
+        if(isLoading) {
             Box(
                 Modifier
                     .fillMaxSize()
@@ -116,7 +125,7 @@ fun KanjiScreen(
                 )
             }
         } else {
-            KanjiList(
+            KanaList(
                 viewModel = viewModel,
                 navController = navController
             )
