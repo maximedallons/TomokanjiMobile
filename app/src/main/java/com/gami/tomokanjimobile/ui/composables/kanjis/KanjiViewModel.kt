@@ -87,8 +87,10 @@ class KanjiViewModel(private val sharedViewModel: SharedViewModel) : ViewModel()
                 })
             }
 
+            println("KANJIS FETCHED")
+
             if(sharedViewModel.getLoggedUser() != null) {
-                println("Fetching mastered kanjis")
+                println("Fetching mastered kanjis in VM")
                 fetchUserMasteredKanjis()
             }
         }

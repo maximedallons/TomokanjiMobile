@@ -94,8 +94,10 @@ class WordViewModel(private val sharedViewModel: SharedViewModel) : ViewModel() 
                 })
             }
 
+            println("WORDS FETCHED")
+
             if(sharedViewModel.getLoggedUser() != null) {
-                println("Fetching mastered words")
+                println("Fetching mastered words in VM")
                 fetchUserMasteredWords()
             }
         }

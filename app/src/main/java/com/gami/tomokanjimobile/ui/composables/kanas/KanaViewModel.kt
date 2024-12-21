@@ -112,7 +112,6 @@ class KanaViewModel(private val sharedViewModel: SharedViewModel) : ViewModel() 
     }
 
     fun fetchUserMasteredHiraganas() {
-        println("Fetching mastered hiraganas")
         viewModelScope.launch {
             masteredHiraganaIds = KanaApi.service.getMasteredHiraganaIds(sharedViewModel.getUserId())
 
@@ -190,7 +189,6 @@ class KanaViewModel(private val sharedViewModel: SharedViewModel) : ViewModel() 
     }
 
     fun fetchUserMasteredKatakanas() {
-        println("Fetching mastered katakanas")
         viewModelScope.launch {
             masteredKatakanaIds = KanaApi.service.getMasteredKatakanaIds(sharedViewModel.getUserId())
 
