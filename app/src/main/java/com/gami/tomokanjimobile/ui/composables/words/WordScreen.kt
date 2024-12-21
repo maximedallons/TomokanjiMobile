@@ -70,7 +70,7 @@ fun WordScreen(
                     fontSize = 24.sp,
                     color = CustomTheme.colors.textPrimary,
                     modifier = Modifier
-                        .padding(top = 40.dp, start = 16.dp, bottom = 16.dp)
+                        .padding(top = 60.dp, start = 16.dp, bottom = 16.dp)
                 )
 
                 if(!isLoading) {

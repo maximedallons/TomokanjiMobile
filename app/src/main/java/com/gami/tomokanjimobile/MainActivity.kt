@@ -64,7 +64,7 @@ class MainActivity : ComponentActivity() {
             Box(modifier = Modifier.fillMaxSize().background(CustomTheme.colors.backgroundPrimary)) { // Ensures that the NavHost takes up only the required space
                 NavHost(navController = navController, startDestination = "login") {
                     composable("login") { LoginScreen(navController, sharedViewModel, LocalContext.current, kanjiViewModel, wordViewModel) }
-                    composable("home") { HomeScreen(navController, LocalContext.current) }
+                    composable("home") { HomeScreen(sharedViewModel, kanjiViewModel, wordViewModel, navController, LocalContext.current) }
                     composable("kanji") {
                         KanjiScreen(kanjiViewModel, bottomNavigationViewModel, navController)
                     }

@@ -98,8 +98,6 @@ class WordViewModel(private val sharedViewModel: SharedViewModel) : ViewModel() 
                 println("Fetching mastered words")
                 fetchUserMasteredWords()
             }
-
-            _isLoading.value = false
         }
     }
 
@@ -115,6 +113,8 @@ class WordViewModel(private val sharedViewModel: SharedViewModel) : ViewModel() 
             )
 
             fetchWordsForLevel(_currentLevel.value)
+
+            _isLoading.value = false
         }
     }
 

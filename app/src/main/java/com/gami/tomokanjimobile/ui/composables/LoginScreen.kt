@@ -126,9 +126,6 @@ fun LoginScreen(navController: NavHostController, sharedViewModel: SharedViewMod
                             withContext(Dispatchers.Main) {
                                 loading = false
                                 if (success) {
-                                    kanjiViewModel.fetchUserMasteredKanjis()
-                                    wordViewModel.fetchUserMasteredWords()
-
                                     navController.navigate("home")
                                 } else {
                                     Toast.makeText(

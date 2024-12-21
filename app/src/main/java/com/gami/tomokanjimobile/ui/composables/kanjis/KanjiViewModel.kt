@@ -91,8 +91,6 @@ class KanjiViewModel(private val sharedViewModel: SharedViewModel) : ViewModel()
                 println("Fetching mastered kanjis")
                 fetchUserMasteredKanjis()
             }
-
-            _isLoading.value = false
         }
     }
 
@@ -108,6 +106,8 @@ class KanjiViewModel(private val sharedViewModel: SharedViewModel) : ViewModel()
             )
 
             fetchKanjisForLevel(_currentLevel.value)
+
+            _isLoading.value = false
         }
     }
 
